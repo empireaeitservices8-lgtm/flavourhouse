@@ -1,0 +1,551 @@
+[
+    {
+        "key": "group_home_page",
+        "title": "Home Page Content",
+        "fields": [
+            {
+                "key": "field_tab_hero",
+                "label": "Hero Section",
+                "name": "",
+                "type": "tab",
+                "placement": "top",
+                "endpoint": 0
+            },
+            {
+                "key": "field_hero_badge",
+                "label": "Hero Badge",
+                "name": "hero_badge",
+                "type": "text",
+                "default_value": "Premium Organic Food"
+            },
+            {
+                "key": "field_hero_title_part_1",
+                "label": "Hero Title Part 1",
+                "name": "hero_title_part_1",
+                "type": "text",
+                "default_value": "Rooted in Health."
+            },
+            {
+                "key": "field_hero_title_part_2",
+                "label": "Hero Title Part 2 (Italic)",
+                "name": "hero_title_part_2",
+                "type": "text",
+                "default_value": "Rich in Flavour."
+            },
+            {
+                "key": "field_hero_description",
+                "label": "Hero Description",
+                "name": "hero_description",
+                "type": "textarea",
+                "default_value": "Discover premium organic foods made with wholesome ingredients and traditional goodness for modern lifestyles."
+            },
+            {
+                "key": "field_hero_image",
+                "label": "Hero Image",
+                "name": "hero_image",
+                "type": "image",
+                "return_format": "url"
+            },
+            {
+                "key": "field_hero_button_1_text",
+                "label": "Button 1 Text",
+                "name": "hero_button_1_text",
+                "type": "text",
+                "default_value": "Shop Products"
+            },
+            {
+                "key": "field_hero_button_1_link",
+                "label": "Button 1 Link",
+                "name": "hero_button_1_link",
+                "type": "text",
+                "default_value": "/products"
+            },
+            {
+                "key": "field_hero_button_2_text",
+                "label": "Button 2 Text",
+                "name": "hero_button_2_text",
+                "type": "text",
+                "default_value": "Explore Categories"
+            },
+            {
+                "key": "field_hero_button_2_link",
+                "label": "Button 2 Link",
+                "name": "hero_button_2_link",
+                "type": "text",
+                "default_value": "/products"
+            },
+            {
+                "key": "field_hero_floating_badge_icon",
+                "label": "Floating Badge Icon (Emoji/Text)",
+                "name": "hero_floating_badge_icon",
+                "type": "text",
+                "default_value": "🌿"
+            },
+            {
+                "key": "field_hero_floating_badge_title",
+                "label": "Floating Badge Title",
+                "name": "hero_floating_badge_title",
+                "type": "text",
+                "default_value": "100% Natural"
+            },
+            {
+                "key": "field_hero_floating_badge_subtitle",
+                "label": "Floating Badge Subtitle",
+                "name": "hero_floating_badge_subtitle",
+                "type": "text",
+                "default_value": "Pure Nutrition"
+            },
+            {
+                "key": "field_tab_trust",
+                "label": "Trust Indicators",
+                "name": "",
+                "type": "tab",
+                "placement": "top",
+                "endpoint": 0
+            },
+            {
+                "key": "field_trust_1_image",
+                "label": "Indicator 1 Image",
+                "name": "trust_indicator_1_image",
+                "type": "image",
+                "return_format": "url"
+            },
+            {
+                "key": "field_trust_1_title",
+                "label": "Indicator 1 Title",
+                "name": "trust_indicator_1_title",
+                "type": "text",
+                "default_value": "100% Natural"
+            },
+            {
+                "key": "field_trust_1_description",
+                "label": "Indicator 1 Description",
+                "name": "trust_indicator_1_description",
+                "type": "text",
+                "default_value": "Pure ingredients sourced directly from nature"
+            },
+            {
+                "key": "field_trust_2_image",
+                "label": "Indicator 2 Image",
+                "name": "trust_indicator_2_image",
+                "type": "image",
+                "return_format": "url"
+            },
+            {
+                "key": "field_trust_2_title",
+                "label": "Indicator 2 Title",
+                "name": "trust_indicator_2_title",
+                "type": "text",
+                "default_value": "No Preservatives"
+            },
+            {
+                "key": "field_trust_2_description",
+                "label": "Indicator 2 Description",
+                "name": "trust_indicator_2_description",
+                "type": "text",
+                "default_value": "Clean label products with zero artificial additives"
+            },
+            {
+                "key": "field_trust_3_image",
+                "label": "Indicator 3 Image",
+                "name": "trust_indicator_3_image",
+                "type": "image",
+                "return_format": "url"
+            },
+            {
+                "key": "field_trust_3_title",
+                "label": "Indicator 3 Title",
+                "name": "trust_indicator_3_title",
+                "type": "text",
+                "default_value": "Wholesome Nutrition"
+            },
+            {
+                "key": "field_trust_3_description",
+                "label": "Indicator 3 Description",
+                "name": "trust_indicator_3_description",
+                "type": "text",
+                "default_value": "Rich in fiber, protein, and essential minerals"
+            },
+            {
+                "key": "field_trust_4_image",
+                "label": "Indicator 4 Image",
+                "name": "trust_indicator_4_image",
+                "type": "image",
+                "return_format": "url"
+            },
+            {
+                "key": "field_trust_4_title",
+                "label": "Indicator 4 Title",
+                "name": "trust_indicator_4_title",
+                "type": "text",
+                "default_value": "Crafted with Care"
+            },
+            {
+                "key": "field_trust_4_description",
+                "label": "Indicator 4 Description",
+                "name": "trust_indicator_4_description",
+                "type": "text",
+                "default_value": "Authentic recipes crafted with traditional care"
+            },
+            {
+                "key": "field_tab_categories",
+                "label": "Categories Section",
+                "name": "",
+                "type": "tab",
+                "placement": "top",
+                "endpoint": 0
+            },
+            {
+                "key": "field_categories_badge",
+                "label": "Categories Badge",
+                "name": "categories_badge",
+                "type": "text",
+                "default_value": "Discover Our Range"
+            },
+            {
+                "key": "field_categories_title",
+                "label": "Categories Title",
+                "name": "categories_title",
+                "type": "text",
+                "default_value": "Wholesome Collections"
+            },
+            {
+                "key": "field_category_1_title",
+                "label": "Category 1 Title",
+                "name": "category_1_title",
+                "type": "text",
+                "default_value": "Pasta"
+            },
+            {
+                "key": "field_category_1_subtitle",
+                "label": "Category 1 Subtitle",
+                "name": "category_1_subtitle",
+                "type": "text",
+                "default_value": "7 Varieties"
+            },
+            {
+                "key": "field_category_1_image",
+                "label": "Category 1 Image",
+                "name": "category_1_image",
+                "type": "image",
+                "return_format": "url"
+            },
+            {
+                "key": "field_category_1_link",
+                "label": "Category 1 Link",
+                "name": "category_1_link",
+                "type": "text",
+                "default_value": "/milletpasta"
+            },
+            {
+                "key": "field_category_2_title",
+                "label": "Category 2 Title",
+                "name": "category_2_title",
+                "type": "text",
+                "default_value": "Noodles"
+            },
+            {
+                "key": "field_category_2_subtitle",
+                "label": "Category 2 Subtitle",
+                "name": "category_2_subtitle",
+                "type": "text",
+                "default_value": "8 Varieties"
+            },
+            {
+                "key": "field_category_2_image",
+                "label": "Category 2 Image",
+                "name": "category_2_image",
+                "type": "image",
+                "return_format": "url"
+            },
+            {
+                "key": "field_category_2_link",
+                "label": "Category 2 Link",
+                "name": "category_2_link",
+                "type": "text",
+                "default_value": "/noodles"
+            },
+            {
+                "key": "field_category_3_title",
+                "label": "Category 3 Title",
+                "name": "category_3_title",
+                "type": "text",
+                "default_value": "Vermicelli"
+            },
+            {
+                "key": "field_category_3_subtitle",
+                "label": "Category 3 Subtitle",
+                "name": "category_3_subtitle",
+                "type": "text",
+                "default_value": "7 Varieties"
+            },
+            {
+                "key": "field_category_3_image",
+                "label": "Category 3 Image",
+                "name": "category_3_image",
+                "type": "image",
+                "return_format": "url"
+            },
+            {
+                "key": "field_category_3_link",
+                "label": "Category 3 Link",
+                "name": "category_3_link",
+                "type": "text",
+                "default_value": "/vermicelli"
+            },
+            {
+                "key": "field_category_4_title",
+                "label": "Category 4 Title",
+                "name": "category_4_title",
+                "type": "text",
+                "default_value": "Cookies"
+            },
+            {
+                "key": "field_category_4_subtitle",
+                "label": "Category 4 Subtitle",
+                "name": "category_4_subtitle",
+                "type": "text",
+                "default_value": "12 Varieties"
+            },
+            {
+                "key": "field_category_4_image",
+                "label": "Category 4 Image",
+                "name": "category_4_image",
+                "type": "image",
+                "return_format": "url"
+            },
+            {
+                "key": "field_category_4_link",
+                "label": "Category 4 Link",
+                "name": "category_4_link",
+                "type": "text",
+                "default_value": "/cookies"
+            },
+            {
+                "key": "field_tab_combo",
+                "label": "Combo Offers",
+                "name": "",
+                "type": "tab",
+                "placement": "top",
+                "endpoint": 0
+            },
+            {
+                "key": "field_combo_badge",
+                "label": "Combo Badge",
+                "name": "combo_badge",
+                "type": "text",
+                "default_value": "OUR TOP PICKS"
+            },
+            {
+                "key": "field_combo_title",
+                "label": "Combo Title",
+                "name": "combo_title",
+                "type": "text",
+                "default_value": "Featured Products"
+            },
+            {
+                "key": "field_combo_description",
+                "label": "Combo Description",
+                "name": "combo_description",
+                "type": "textarea",
+                "default_value": "Get the best of Flavor House with our curated organic selection. Perfect for modern, healthy living."
+            },
+            {
+                "key": "field_combo_button_text",
+                "label": "Combo Button Text",
+                "name": "combo_button_text",
+                "type": "text",
+                "default_value": "View All Products"
+            },
+            {
+                "key": "field_combo_button_link",
+                "label": "Combo Button Link",
+                "name": "combo_button_link",
+                "type": "text",
+                "default_value": "/products"
+            },
+            {
+                "key": "field_tab_why_millets",
+                "label": "Why Millets Section",
+                "name": "",
+                "type": "tab",
+                "placement": "top",
+                "endpoint": 0
+            },
+            {
+                "key": "field_why_millets_badge",
+                "label": "Badge",
+                "name": "why_millets_badge",
+                "type": "text",
+                "default_value": "Pure Nutrition"
+            },
+            {
+                "key": "field_why_millets_title_1",
+                "label": "Title Part 1",
+                "name": "why_millets_title_part_1",
+                "type": "text",
+                "default_value": "Rooted in Health."
+            },
+            {
+                "key": "field_why_millets_title_2",
+                "label": "Title Part 2",
+                "name": "why_millets_title_part_2",
+                "type": "text",
+                "default_value": "Rich in Flavour."
+            },
+            {
+                "key": "field_why_millets_description",
+                "label": "Description",
+                "name": "why_millets_description",
+                "type": "textarea",
+                "default_value": "We believe in bringing the finest natural food items to modern dining tables."
+            },
+            {
+                "key": "field_why_millets_image",
+                "label": "Image",
+                "name": "why_millets_image",
+                "type": "image",
+                "return_format": "url"
+            },
+            {
+                "key": "field_why_millets_fbadge_title",
+                "label": "Floating Badge Title",
+                "name": "why_millets_floating_badge_title",
+                "type": "text",
+                "default_value": "100%"
+            },
+            {
+                "key": "field_why_millets_fbadge_sub",
+                "label": "Floating Badge Subtitle",
+                "name": "why_millets_floating_badge_subtitle",
+                "type": "text",
+                "default_value": "Pure Organic <br/>Ingredients"
+            },
+            {
+                "key": "field_tab_story",
+                "label": "Story Section",
+                "name": "",
+                "type": "tab",
+                "placement": "top",
+                "endpoint": 0
+            },
+            {
+                "key": "field_story_badge",
+                "label": "Badge",
+                "name": "story_badge",
+                "type": "text",
+                "default_value": "Our Roots"
+            },
+            {
+                "key": "field_story_title_1",
+                "label": "Title Part 1",
+                "name": "story_title_part_1",
+                "type": "text",
+                "default_value": "Rooted in Health."
+            },
+            {
+                "key": "field_story_title_2",
+                "label": "Title Part 2",
+                "name": "story_title_part_2",
+                "type": "text",
+                "default_value": "Rich in Flavour."
+            },
+            {
+                "key": "field_story_image",
+                "label": "Image",
+                "name": "story_image",
+                "type": "image",
+                "return_format": "url"
+            },
+            {
+                "key": "field_story_p1",
+                "label": "Paragraph 1",
+                "name": "story_paragraph_1",
+                "type": "textarea",
+                "default_value": "Flavor House was founded with a simple yet powerful mission..."
+            },
+            {
+                "key": "field_story_p2",
+                "label": "Paragraph 2",
+                "name": "story_paragraph_2",
+                "type": "textarea",
+                "default_value": "We believe that pure food shouldn't be a compromise..."
+            },
+            {
+                "key": "field_story_btn_text",
+                "label": "Button Text",
+                "name": "story_button_text",
+                "type": "text",
+                "default_value": "Discover Our Story"
+            },
+            {
+                "key": "field_story_btn_link",
+                "label": "Button Link",
+                "name": "story_button_link",
+                "type": "text",
+                "default_value": "/about"
+            },
+            {
+                "key": "field_tab_newsletter",
+                "label": "Newsletter Section",
+                "name": "",
+                "type": "tab",
+                "placement": "top",
+                "endpoint": 0
+            },
+            {
+                "key": "field_newsletter_badge",
+                "label": "Badge",
+                "name": "newsletter_badge",
+                "type": "text",
+                "default_value": "Stay Connected"
+            },
+            {
+                "key": "field_newsletter_title_1",
+                "label": "Title Part 1",
+                "name": "newsletter_title_part_1",
+                "type": "text",
+                "default_value": "Join The Healthy"
+            },
+            {
+                "key": "field_newsletter_title_2",
+                "label": "Title Part 2",
+                "name": "newsletter_title_part_2",
+                "type": "text",
+                "default_value": "Food Movement."
+            },
+            {
+                "key": "field_newsletter_desc",
+                "label": "Description",
+                "name": "newsletter_description",
+                "type": "textarea",
+                "default_value": "Subscribe to our newsletter for exclusive recipes..."
+            }
+        ],
+        "location": [
+            [
+                {
+                    "param": "page_type",
+                    "operator": "==",
+                    "value": "front_page"
+                }
+            ],
+            [
+                {
+                    "param": "page",
+                    "operator": "==",
+                    "value": "home"
+                }
+            ]
+        ],
+        "menu_order": 0,
+        "position": "normal",
+        "style": "default",
+        "label_placement": "top",
+        "instruction_placement": "label",
+        "hide_on_screen": "",
+        "active": true,
+        "description": "",
+        "show_in_rest": 1
+    }
+]
