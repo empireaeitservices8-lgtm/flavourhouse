@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { ProductDetailsClient } from "@/components/products/ProductDetailsClient";
 import { api } from "@/lib/woocommerce";
-import { PRODUCTS } from "@/lib/data"; // Fallback
+import { getStoredProductById, getAllStoredProducts } from "@/lib/products-store";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -56,11 +56,13 @@ export default async function SingleProductPage({ params }: { params: Promise<{ 
     }
 
   } catch (error) {
-    // Fallback to local data
-    console.error("WooCommerce error on product detail:", error);
-    product = PRODUCTS.find((p) => p.id.toString() === id);
+    // Fallback to stored products
+    product = getStoredProductById(id);
     if (product) {
-      relatedProducts = PRODUCTS.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4);
+      const allStored = getAllStoredProducts();
+      relatedProducts = allStored
+        .filter((p) => p.category === product.category && p.id.toString() !== id.toString())
+        .slice(0, 4);
     }
   }
 

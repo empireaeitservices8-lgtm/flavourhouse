@@ -1,16 +1,16 @@
 import { NextResponse } from "next/server";
 import { api } from "@/lib/woocommerce";
-import { PRODUCTS } from "@/lib/data";
+import { getAllStoredProducts } from "@/lib/products-store";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export async function GET() {
   try {
-    // Fallback to local data if WooCommerce is not configured
+    // Return admin-managed stored products if WooCommerce is not configured
     if (!process.env.WC_STORE_URL || !process.env.WC_CONSUMER_KEY) {
-      console.log("WooCommerce not configured, returning local products.");
-      return NextResponse.json(PRODUCTS);
+      const stored = getAllStoredProducts();
+      return NextResponse.json(stored);
     }
 
     const response = await api.get("products", {
@@ -29,8 +29,8 @@ export async function GET() {
 
     return NextResponse.json(products);
   } catch (error: any) {
-    console.error("WooCommerce fetch error:", error.response?.data || error.message);
-    // Fallback on error
-    return NextResponse.json(PRODUCTS);
+    console.error("WooCommerce fetch error, returning stored products:", error.response?.data || error.message);
+    const stored = getAllStoredProducts();
+    return NextResponse.json(stored);
   }
 }

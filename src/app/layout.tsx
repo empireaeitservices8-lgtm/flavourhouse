@@ -28,11 +28,8 @@ export const metadata: Metadata = {
   description: "Rooted in Health, Rich in Flavour. Discover premium organic foods made with wholesome ingredients and traditional goodness for modern lifestyles.",
 };
 
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
-import { WhatsAppPop } from "@/components/layout/WhatsAppPop";
 import { CartProvider } from "@/context/CartContext";
-import { CartDrawer } from "@/components/cart/CartDrawer";
+import { MainLayoutWrapper } from "@/components/layout/MainLayoutWrapper";
 
 export default function RootLayout({
   children,
@@ -46,13 +43,7 @@ export default function RootLayout({
     >
       <body className="font-sans bg-background text-foreground overflow-x-hidden min-h-screen flex flex-col">
         <CartProvider>
-          <Navbar />
-          <main className="flex-grow pt-24">
-            {children}
-          </main>
-          <Footer />
-          <WhatsAppPop />
-          <CartDrawer />
+          <MainLayoutWrapper>{children}</MainLayoutWrapper>
         </CartProvider>
       </body>
     </html>
