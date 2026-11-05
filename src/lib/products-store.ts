@@ -13,34 +13,30 @@ export interface StoredProduct {
   createdAt?: string;
 }
 
+// On Vercel (serverless), filesystem writes don't persist.
+// reads work from the committed data/products.json
+// writes are only supported on Node.js environments (Hostinger)
+const IS_VERCEL = process.env.VERCEL === "1";
 const DATA_DIR = path.join(process.cwd(), "data");
 const PRODUCTS_FILE = path.join(DATA_DIR, "products.json");
 
-// Helper to ensure data directory and products.json exist with seed data
 function initProductsFile(): StoredProduct[] {
   try {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
+    // On Vercel: try to read committed data/products.json
+    if (fs.existsSync(PRODUCTS_FILE)) {
+      const fileContent = fs.readFileSync(PRODUCTS_FILE, "utf8");
+      if (fileContent.trim()) {
+        return JSON.parse(fileContent);
+      }
     }
 
-    if (!fs.existsSync(PRODUCTS_FILE)) {
-      // Seed with all original products from PRODUCTS in data.ts
-      const initialProducts: StoredProduct[] = PRODUCTS.map((p) => ({
-        ...p,
-        description: `${p.name} - Premium healthy organic millet product by Flavor House.`,
-        inStock: true,
-        createdAt: new Date().toISOString(),
-      }));
-
-      fs.writeFileSync(PRODUCTS_FILE, JSON.stringify(initialProducts, null, 2), "utf8");
-      return initialProducts;
-    }
-
-    const fileContent = fs.readFileSync(PRODUCTS_FILE, "utf8");
-    if (!fileContent.trim()) {
-      return PRODUCTS as StoredProduct[];
-    }
-    return JSON.parse(fileContent);
+    // Fallback to hardcoded data
+    return PRODUCTS.map((p) => ({
+      ...p,
+      description: `${p.name} - Premium healthy organic millet product by Flavor House.`,
+      inStock: true,
+      createdAt: new Date().toISOString(),
+    }));
   } catch (error) {
     console.error("Error reading products.json, falling back to default PRODUCTS:", error);
     return PRODUCTS as StoredProduct[];
@@ -57,6 +53,11 @@ export function getStoredProductById(id: number | string): StoredProduct | undef
 }
 
 export function saveAllProducts(products: StoredProduct[]): boolean {
+  if (IS_VERCEL) {
+    console.warn("Cannot persist products on Vercel serverless. Use Hostinger admin panel.");
+    return false;
+  }
+
   try {
     if (!fs.existsSync(DATA_DIR)) {
       fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -78,13 +79,11 @@ export function addStoredProduct(productData: {
   inStock?: boolean;
 }): StoredProduct {
   const products = getAllStoredProducts();
-
-  // Find highest current ID to ensure uniqueness
   const maxId = products.reduce((max, p) => (p.id > max ? p.id : max), 0);
   const newProduct: StoredProduct = {
     id: maxId + 1,
     name: productData.name.trim(),
-    category: productData.category.trim() || "Millet Food",
+    category: productData.category.trim() || "Pasta",
     price: Number(productData.price) || 0,
     image: productData.image.trim() || "https://images.unsplash.com/photo-1598720290281-9f26ae6d6f81",
     description: productData.description?.trim() || "",
@@ -92,7 +91,7 @@ export function addStoredProduct(productData: {
     createdAt: new Date().toISOString(),
   };
 
-  products.unshift(newProduct); // Add new product to top
+  products.unshift(newProduct);
   saveAllProducts(products);
   return newProduct;
 }
@@ -104,15 +103,13 @@ export function updateStoredProduct(
   const products = getAllStoredProducts();
   const index = products.findIndex((p) => p.id.toString() === id.toString());
 
-  if (index === -1) {
-    return null;
-  }
+  if (index === -1) return null;
 
   const existing = products[index];
   const updatedProduct: StoredProduct = {
     ...existing,
     ...updatedData,
-    id: existing.id, // ID remains invariant
+    id: existing.id,
   };
 
   products[index] = updatedProduct;
@@ -125,10 +122,7 @@ export function deleteStoredProduct(id: number | string): boolean {
   const initialLength = products.length;
   const filtered = products.filter((p) => p.id.toString() !== id.toString());
 
-  if (filtered.length === initialLength) {
-    return false;
-  }
-
+  if (filtered.length === initialLength) return false;
   return saveAllProducts(filtered);
 }
 
@@ -138,4 +132,3 @@ export function getAllCategories(): string[] {
   const merged = Array.from(new Set([...CATEGORIES, ...dynamicCategories]));
   return merged;
 }
-
