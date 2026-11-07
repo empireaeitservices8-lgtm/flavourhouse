@@ -157,7 +157,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </div>
               <div>
                 <h1 className="font-heading font-bold text-white tracking-wide text-base">Flavour House</h1>
-                <p className="text-[11px] font-button text-[#B8945F] uppercase tracking-wider font-semibold">Store Administration</p>
               </div>
             </Link>
             <button

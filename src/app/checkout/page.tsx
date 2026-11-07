@@ -172,6 +172,77 @@ export default function CheckoutPage() {
   const finalTotal = subtotal + shippingFee;
   const amountForFreeDelivery = subtotal > 0 && subtotal <= 1000 ? 1001 - subtotal : 0;
 
+  const loadRazorpayScript = () => {
+    return new Promise<boolean>((resolve) => {
+      if (typeof window !== "undefined" && (window as any).Razorpay) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const sendOrderToBackend = async (actualPaymentMethod: string, actualPaymentStatus: string) => {
+    // If customer requested to save address, remember it locally as well for next time
+    if (saveAddress) {
+      try {
+        localStorage.setItem("fh_guest_saved_address", JSON.stringify(formData));
+      } catch (e) {}
+    } else {
+      try {
+        localStorage.removeItem("fh_guest_saved_address");
+      } catch (e) {}
+    }
+
+    const response = await fetch("/api/orders", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...getCustomerAuthHeaders(),
+      },
+      body: JSON.stringify({
+        customer: {
+          fullName: formData.fullName.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim(),
+          alternatePhone: formData.alternatePhone.trim() || undefined,
+        },
+        deliveryAddress: {
+          houseName: formData.houseName.trim(),
+          street: formData.street.trim(),
+          city: formData.city.trim(),
+          district: formData.district.trim() || undefined,
+          state: formData.state.trim(),
+          pincode: formData.pincode.trim(),
+          landmark: formData.landmark.trim() || undefined,
+        },
+        items: cart.map((item) => ({
+          productId: item.id,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          image: item.image,
+        })),
+        paymentMethod: actualPaymentMethod,
+        paymentStatus: actualPaymentStatus,
+        saveAddress: saveAddress,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.success && data.orderNumber) {
+      clearCart();
+      router.push(`/order-success?orderId=${data.orderId}&orderNumber=${data.orderNumber}`);
+    } else {
+      setErrorMessage(data.error || "Failed to place order. Please review your details and try again.");
+    }
+  };
+
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (cart.length === 0) return;
@@ -180,64 +251,70 @@ export default function CheckoutPage() {
     setIsProcessing(true);
 
     try {
-      // If customer requested to save address, remember it locally as well for next time
-      if (saveAddress) {
-        try {
-          localStorage.setItem("fh_guest_saved_address", JSON.stringify(formData));
-        } catch (e) {}
-      } else {
-        try {
-          localStorage.removeItem("fh_guest_saved_address");
-        } catch (e) {}
+      if (paymentMethod === "online") {
+        const scriptLoaded = await loadRazorpayScript();
+        if (!scriptLoaded) {
+          setErrorMessage("Failed to load secure payment gateway. Please check your connection or choose Cash on Delivery.");
+          setIsProcessing(false);
+          return;
+        }
+
+        const rzpRes = await fetch("/api/razorpay", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amount: finalTotal }),
+        });
+        const rzpData = await rzpRes.json();
+
+        if (rzpRes.ok && rzpData.id && rzpData.key_id) {
+          const rzp = new (window as any).Razorpay({
+            key: rzpData.key_id,
+            amount: rzpData.amount,
+            currency: "INR",
+            name: "Flavour House Foods",
+            description: `Order Payment (${cart.length} items)`,
+            order_id: rzpData.id,
+            prefill: {
+              name: formData.fullName.trim(),
+              email: formData.email.trim(),
+              contact: formData.phone.trim(),
+            },
+            theme: { color: "#8E2B1F" },
+            handler: async function () {
+              try {
+                await sendOrderToBackend("Online", "Paid");
+              } catch (err: any) {
+                setErrorMessage("Payment was successful but failed to register order. Please contact support.");
+              } finally {
+                setIsProcessing(false);
+              }
+            },
+            modal: {
+              ondismiss: function () {
+                setIsProcessing(false);
+              },
+            },
+          });
+          rzp.open();
+          return;
+        } else {
+          // If Razorpay keys are not yet configured in environment, let the user know cleanly
+          setErrorMessage(
+            "Online payment gateway is awaiting merchant key setup. Please choose Cash on Delivery (COD) to place your order right now."
+          );
+          setIsProcessing(false);
+          return;
+        }
       }
 
-      const response = await fetch(`${BACKEND_URL}/api/orders`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...getCustomerAuthHeaders(),
-        },
-        body: JSON.stringify({
-          customer: {
-            fullName: formData.fullName.trim(),
-            email: formData.email.trim(),
-            phone: formData.phone.trim(),
-            alternatePhone: formData.alternatePhone.trim() || undefined,
-          },
-          deliveryAddress: {
-            houseName: formData.houseName.trim(),
-            street: formData.street.trim(),
-            city: formData.city.trim(),
-            district: formData.district.trim() || undefined,
-            state: formData.state.trim(),
-            pincode: formData.pincode.trim(),
-            landmark: formData.landmark.trim() || undefined,
-          },
-          items: cart.map((item) => ({
-            productId: item.id,
-            name: item.name,
-            quantity: item.quantity,
-            price: item.price,
-            image: item.image,
-          })),
-          paymentMethod: paymentMethod === "cod" ? "COD" : "Online",
-          saveAddress: saveAddress,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.success && data.orderNumber) {
-        clearCart();
-        // Redirect immediately to the dedicated Order Success page with MySQL verified order info
-        router.push(`/order-success?orderId=${data.orderId}&orderNumber=${data.orderNumber}`);
-      } else {
-        setErrorMessage(data.error || "Failed to place order. Please review your details and try again.");
-      }
+      // Default: Cash on Delivery
+      await sendOrderToBackend("COD", "Pending");
     } catch (err: any) {
       setErrorMessage("Could not connect to the backend server. Please check your connection.");
     } finally {
-      setIsProcessing(false);
+      if (paymentMethod !== "online") {
+        setIsProcessing(false);
+      }
     }
   };
 
