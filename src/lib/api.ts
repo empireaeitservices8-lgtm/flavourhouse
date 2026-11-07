@@ -88,13 +88,13 @@ export async function fetchFromBackend<T = any>(
   };
 
   try {
-    // If signal not provided, use default 4000ms timeout
+    // If signal not provided, use default 15000ms timeout for reliable serverless database queries
     let signal = options.signal;
     let timer: NodeJS.Timeout | null = null;
     if (!signal) {
       const controller = new AbortController();
       signal = controller.signal;
-      timer = setTimeout(() => controller.abort(), 4000);
+      timer = setTimeout(() => controller.abort(), 15000);
     }
 
     const res = await fetch(url, {

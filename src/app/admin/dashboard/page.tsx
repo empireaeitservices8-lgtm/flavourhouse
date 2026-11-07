@@ -353,7 +353,7 @@ export default function AdminDashboardPage() {
                   {recentOrders.slice(0, 5).map((o) => (
                     <tr key={o.id} className="hover:bg-[#FAF7F2]/50 transition">
                       <td className="py-3 font-mono font-semibold text-[#6E5432]">
-                        <Link href={`/admin/orders/${o.id}`} className="hover:underline">
+                        <Link href={`/admin/orders?highlight=${o.orderNumber || o.id}`} className="hover:underline">
                           {o.orderNumber}
                         </Link>
                       </td>

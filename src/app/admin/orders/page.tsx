@@ -49,6 +49,7 @@ function AdminOrdersContent() {
 
   // Selected Order for Details Modal
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+  const [openingOrderId, setOpeningOrderId] = useState<number | string | null>(null);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [notification, setNotification] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
@@ -65,7 +66,9 @@ function AdminOrdersContent() {
         setOrders(res.data.orders);
 
         if (highlightOrderNo) {
-          const matched = res.data.orders.find((o: any) => o.orderNumber === highlightOrderNo);
+          const matched = res.data.orders.find(
+            (o: any) => o.orderNumber === highlightOrderNo || String(o.id) === highlightOrderNo
+          );
           if (matched) {
             openOrderDetails(matched.id);
           }
@@ -88,13 +91,18 @@ function AdminOrdersContent() {
   };
 
   const openOrderDetails = async (orderId: number | string) => {
+    setOpeningOrderId(orderId);
     try {
       const res = await fetchFromBackend(`/api/admin/orders/${orderId}`);
       if (res.ok && res.data?.order) {
         setSelectedOrder(res.data.order);
+      } else {
+        showNotification(res.data?.error || "Failed to fetch order details", "error");
       }
     } catch {
       showNotification("Failed to fetch order details", "error");
+    } finally {
+      setOpeningOrderId(null);
     }
   };
 
@@ -147,7 +155,7 @@ function AdminOrdersContent() {
     }
   };
 
-  const getNextAction = (status: string) => {
+  const getNextAction = (status?: string) => {
     switch (status) {
       case "Pending":
         return { label: "Mark as Confirmed", next: "Confirmed", color: "bg-blue-600 hover:bg-blue-500" };
@@ -162,7 +170,7 @@ function AdminOrdersContent() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status?: string) => {
     switch (status) {
       case "Pending":
         return "bg-amber-100 text-amber-800 border-amber-300";
@@ -196,6 +204,43 @@ function AdminOrdersContent() {
       return matchesFilter && matchesSearch;
     });
   }, [orders, activeFilter, searchQuery]);
+
+  // Safe parsed delivery address for selected order
+  const deliveryAddr = useMemo(() => {
+    if (!selectedOrder?.deliveryAddress) return {};
+    if (typeof selectedOrder.deliveryAddress === "string") {
+      try {
+        return JSON.parse(selectedOrder.deliveryAddress);
+      } catch {
+        return { houseName: selectedOrder.deliveryAddress };
+      }
+    }
+    return selectedOrder.deliveryAddress;
+  }, [selectedOrder]);
+
+  const customerData = useMemo(() => {
+    if (!selectedOrder) return { name: "Customer", email: "-", phone: "-", alternatePhone: null };
+    return {
+      name: selectedOrder.customer?.name || selectedOrder.customerName || deliveryAddr.fullName || "Customer",
+      email: selectedOrder.customer?.email || selectedOrder.customerEmail || deliveryAddr.email || "-",
+      phone: selectedOrder.customer?.phone || selectedOrder.customerPhone || deliveryAddr.phone || "-",
+      alternatePhone: selectedOrder.customer?.alternatePhone || deliveryAddr.alternatePhone || null,
+    };
+  }, [selectedOrder, deliveryAddr]);
+
+  const orderItems = useMemo(() => {
+    return Array.isArray(selectedOrder?.items) ? selectedOrder.items : [];
+  }, [selectedOrder]);
+
+  const orderHistory = useMemo(() => {
+    if (Array.isArray(selectedOrder?.history) && selectedOrder.history.length > 0) {
+      return selectedOrder.history;
+    }
+    if (Array.isArray(selectedOrder?.statusHistory) && selectedOrder.statusHistory.length > 0) {
+      return selectedOrder.statusHistory;
+    }
+    return [];
+  }, [selectedOrder]);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -327,9 +372,17 @@ function AdminOrdersContent() {
                       <div className="inline-flex items-center gap-2">
                         <button
                           onClick={() => openOrderDetails(o.id)}
-                          className="px-3 py-1.5 rounded-lg bg-stone-100 hover:bg-amber-600 hover:text-white text-stone-700 font-semibold text-xs transition cursor-pointer"
+                          disabled={openingOrderId === o.id}
+                          className="px-3 py-1.5 rounded-lg bg-stone-100 hover:bg-amber-600 hover:text-white text-stone-700 font-semibold text-xs transition cursor-pointer disabled:opacity-50 inline-flex items-center gap-1.5"
                         >
-                          View & Update
+                          {openingOrderId === o.id ? (
+                            <>
+                              <div className="w-3 h-3 border-2 border-stone-600 border-t-transparent rounded-full animate-spin"></div>
+                              <span>Loading...</span>
+                            </>
+                          ) : (
+                            <span>View & Update</span>
+                          )}
                         </button>
                         <button
                           onClick={() => setDeleteOrder(o)}
@@ -429,10 +482,11 @@ function AdminOrdersContent() {
       {selectedOrder && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto">
           <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-stone-200 my-8 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95">
+            {/* Modal Header */}
             <div className="flex items-start justify-between pb-4 border-b border-stone-200">
               <div>
                 <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
-                  {selectedOrder.orderNumber}
+                  {selectedOrder.orderNumber || `FH-${selectedOrder.id}`}
                 </span>
                 <h3 className="text-xl font-heading font-bold text-stone-900 mt-2">
                   Order Details
@@ -449,12 +503,13 @@ function AdminOrdersContent() {
               </button>
             </div>
 
+            {/* Status Control Card with Dropdown and Next-Step Button */}
             <div className="mt-6 p-4 rounded-2xl bg-stone-50 border border-stone-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
-                <p className="text-xs text-stone-500 font-medium">Current Fulfillment Status:</p>
-                <div className="flex items-center gap-2 mt-1">
+                <p className="text-xs text-stone-500 font-medium mb-1">Current Fulfillment Status:</p>
+                <div className="flex items-center gap-2">
                   <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getStatusBadge(selectedOrder.status)}`}>
-                    {selectedOrder.status}
+                    {selectedOrder.status || "Pending"}
                   </span>
                   {selectedOrder.status === "Delivered" && (
                     <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
@@ -465,7 +520,22 @@ function AdminOrdersContent() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              {/* Status Change Selector & Progression */}
+              <div className="flex flex-wrap items-center gap-2">
+                <select
+                  value={selectedOrder.status || "Pending"}
+                  onChange={(e) => handleUpdateStatus(e.target.value)}
+                  disabled={isUpdatingStatus}
+                  className="bg-white border border-stone-300 rounded-xl px-3 py-2 text-xs font-semibold text-stone-800 focus:outline-none focus:border-amber-500 cursor-pointer disabled:opacity-50 shadow-xs"
+                >
+                  <option value="Pending">Pending</option>
+                  <option value="Confirmed">Confirmed</option>
+                  <option value="Shipped">Shipped</option>
+                  <option value="Out for Delivery">Out for Delivery</option>
+                  <option value="Delivered">Delivered</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+
                 {getNextAction(selectedOrder.status) && (
                   <button
                     onClick={() => handleUpdateStatus(getNextAction(selectedOrder.status)!.next)}
@@ -481,74 +551,78 @@ function AdminOrdersContent() {
                   <button
                     onClick={() => setShowCancelModal(true)}
                     disabled={isUpdatingStatus}
-                    className="px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold transition cursor-pointer"
+                    className="px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold transition cursor-pointer disabled:opacity-50"
                   >
-                    Cancel Order
+                    Cancel
                   </button>
                 )}
               </div>
             </div>
 
+            {/* Customer & Delivery Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+              {/* Customer Info */}
               <div className="p-4 rounded-2xl border border-stone-200/80 bg-white">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-3 flex items-center gap-1.5">
                   <Phone className="w-3.5 h-3.5 text-amber-500" />
                   <span>Customer Details</span>
                 </h4>
                 <div className="space-y-1.5 text-xs">
-                  <p className="font-bold text-stone-900">{selectedOrder.customer?.name || selectedOrder.customerName || "Customer"}</p>
+                  <p className="font-bold text-stone-900">{customerData.name}</p>
                   <p className="text-stone-600 flex items-center gap-1.5">
                     <Mail className="w-3 h-3 text-stone-400" />
-                    <span>{selectedOrder.customer?.email || selectedOrder.customerEmail || "-"}</span>
+                    <span>{customerData.email}</span>
                   </p>
                   <p className="text-stone-600 flex items-center gap-1.5">
                     <Phone className="w-3 h-3 text-stone-400" />
-                    <span>{selectedOrder.customer?.phone || selectedOrder.customerPhone || "-"}</span>
+                    <span>{customerData.phone}</span>
                   </p>
-                  {selectedOrder.customer?.alternatePhone && (
+                  {customerData.alternatePhone && (
                     <p className="text-stone-400">
-                      Alt: {selectedOrder.customer.alternatePhone}
+                      Alt: {customerData.alternatePhone}
                     </p>
                   )}
                 </div>
               </div>
 
+              {/* Delivery Address */}
               <div className="p-4 rounded-2xl border border-stone-200/80 bg-white">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-3 flex items-center gap-1.5">
                   <MapPin className="w-3.5 h-3.5 text-amber-500" />
                   <span>Delivery Address</span>
                 </h4>
                 <div className="text-xs text-stone-600 space-y-1">
-                  <p className="font-semibold text-stone-900">{selectedOrder.deliveryAddress?.houseName || "-"}</p>
-                  <p>{selectedOrder.deliveryAddress?.street || ""}</p>
+                  <p className="font-semibold text-stone-900">{deliveryAddr.houseName || "-"}</p>
+                  <p>{deliveryAddr.street || ""}</p>
                   <p>
-                    {selectedOrder.deliveryAddress?.city || ""}
-                    {selectedOrder.deliveryAddress?.district ? `, ${selectedOrder.deliveryAddress.district}` : ""}
+                    {deliveryAddr.city || ""}
+                    {deliveryAddr.district ? `, ${deliveryAddr.district}` : ""}
                   </p>
                   <p>
-                    {selectedOrder.deliveryAddress?.state || ""} {selectedOrder.deliveryAddress?.pincode ? `- ${selectedOrder.deliveryAddress.pincode}` : ""}
+                    {deliveryAddr.state || ""} {deliveryAddr.pincode ? `- ${deliveryAddr.pincode}` : ""}
                   </p>
-                  {selectedOrder.deliveryAddress?.landmark && (
+                  {deliveryAddr.landmark && (
                     <p className="text-stone-400 text-[11px]">
-                      Landmark: {selectedOrder.deliveryAddress.landmark}
+                      Landmark: {deliveryAddr.landmark}
                     </p>
                   )}
                 </div>
               </div>
             </div>
 
+            {/* Ordered Products */}
             <div className="mt-6">
               <h4 className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-3">
-                Ordered Products ({selectedOrder.items?.length || 0})
+                Ordered Products ({orderItems.length})
               </h4>
               <div className="divide-y divide-stone-100 border border-stone-200 rounded-2xl overflow-hidden">
-                {selectedOrder.items?.map((item: any) => (
-                  <div key={item.id} className="p-3.5 flex items-center justify-between text-xs hover:bg-stone-50/50">
+                {orderItems.map((item: any, idx: number) => (
+                  <div key={item.id || idx} className="p-3.5 flex items-center justify-between text-xs hover:bg-stone-50/50">
                     <div className="flex items-center gap-3">
                       {item.productImageSnapshot ? (
                         <img
                           src={item.productImageSnapshot}
-                          alt={item.productNameSnapshot}
+                          alt={item.productNameSnapshot || "Product"}
                           className="w-10 h-10 rounded-xl object-cover bg-stone-100 shrink-0 border border-stone-200"
                         />
                       ) : (
@@ -557,7 +631,7 @@ function AdminOrdersContent() {
                         </div>
                       )}
                       <div>
-                        <p className="font-semibold text-stone-900">{item.productNameSnapshot}</p>
+                        <p className="font-semibold text-stone-900">{item.productNameSnapshot || "Product"}</p>
                         <p className="text-stone-400 text-[11px]">
                           ₹{item.unitPrice} × {item.quantity}
                         </p>
@@ -569,10 +643,11 @@ function AdminOrdersContent() {
               </div>
             </div>
 
+            {/* Financial Summary */}
             <div className="mt-6 p-4 rounded-2xl bg-stone-50 border border-stone-200 text-xs space-y-2">
               <div className="flex justify-between text-stone-600">
                 <span>Subtotal</span>
-                <span>₹{selectedOrder.subtotal}</span>
+                <span>₹{selectedOrder.subtotal || 0}</span>
               </div>
               <div className="flex justify-between text-stone-600">
                 <span>Delivery Charge</span>
@@ -584,7 +659,7 @@ function AdminOrdersContent() {
                   )}
                 </span>
               </div>
-              {selectedOrder.discount > 0 && (
+              {Number(selectedOrder.discount) > 0 && (
                 <div className="flex justify-between text-emerald-600">
                   <span>Discount</span>
                   <span>-₹{selectedOrder.discount}</span>
@@ -592,26 +667,27 @@ function AdminOrdersContent() {
               )}
               <div className="pt-2 border-t border-stone-200 flex justify-between font-bold text-stone-900 text-sm">
                 <span>Total Amount</span>
-                <span>₹{selectedOrder.totalAmount}</span>
+                <span>₹{selectedOrder.totalAmount || 0}</span>
               </div>
               <div className="flex justify-between text-stone-500 text-[11px] pt-1">
-                <span>Payment: {selectedOrder.paymentMethod}</span>
-                <span>Status: <strong className="text-stone-800">{selectedOrder.paymentStatus}</strong></span>
+                <span>Payment: {selectedOrder.paymentMethod || "COD"}</span>
+                <span>Status: <strong className="text-stone-800">{selectedOrder.paymentStatus || "Pending"}</strong></span>
               </div>
             </div>
 
-            {selectedOrder.history && selectedOrder.history.length > 0 && (
+            {/* Status History Timeline */}
+            {orderHistory.length > 0 && (
               <div className="mt-6">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-3">
                   Status Progression History
                 </h4>
                 <div className="space-y-3 relative before:absolute before:inset-0 before:left-3.5 before:w-0.5 before:bg-stone-200">
-                  {selectedOrder.history.map((h: any, idx: number) => (
+                  {orderHistory.map((h: any, idx: number) => (
                     <div key={h.id || idx} className="relative flex items-start gap-3 pl-8 text-xs">
                       <div className="absolute left-2 top-1.5 w-3 h-3 rounded-full bg-amber-600 border-2 border-white shadow-xs"></div>
                       <div>
                         <p className="font-bold text-stone-900">
-                          {h.newStatus}
+                          {h.newStatus || h.status}
                         </p>
                         <p className="text-[11px] text-stone-400">
                           {h.changedAt ? new Date(h.changedAt).toLocaleString("en-IN") : ""} • by {h.changedBy || "System"}
