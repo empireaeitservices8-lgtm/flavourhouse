@@ -153,9 +153,9 @@ export default function AdminCustomersPage() {
     if (!q) return customers;
     return customers.filter(
       (c) =>
-        c.name.toLowerCase().includes(q) ||
-        c.email.toLowerCase().includes(q) ||
-        c.phone.toLowerCase().includes(q)
+        (c.name && String(c.name).toLowerCase().includes(q)) ||
+        (c.email && String(c.email).toLowerCase().includes(q)) ||
+        (c.phone && String(c.phone).toLowerCase().includes(q))
     );
   }, [customers, searchQuery]);
 
@@ -442,7 +442,7 @@ export default function AdminCustomersPage() {
                   Total Orders
                 </p>
                 <p className="text-lg font-bold text-[#3F3424] mt-1 font-heading">
-                  {selectedCustomer.totalOrders}
+                  {selectedCustomer.totalOrders ?? selectedCustomer.orderCount ?? 0}
                 </p>
               </div>
 
@@ -451,7 +451,7 @@ export default function AdminCustomersPage() {
                   Total Spent
                 </p>
                 <p className="text-lg font-bold text-[#B8945F] mt-1 font-heading">
-                  ₹{selectedCustomer.totalSpent}
+                  ₹{selectedCustomer.totalSpent ?? selectedCustomer.totalSpend ?? 0}
                 </p>
               </div>
 

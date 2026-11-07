@@ -12,10 +12,31 @@ export async function GET(request: Request) {
   }
 
   try {
-    const customers = await query(`SELECT id, name, email, phone, createdAt FROM customers ORDER BY createdAt DESC`);
-    return NextResponse.json({ customers });
+    const customers = await query<any[]>(`
+      SELECT c.id, c.name, c.email, c.phone, c.alternatePhone, c.isActive, c.createdAt,
+             COUNT(DISTINCT o.id) as orderCount,
+             COALESCE(SUM(o.totalAmount), 0) as totalSpend
+      FROM customers c
+      LEFT JOIN orders o ON c.id = o.customerId
+      GROUP BY c.id
+      ORDER BY c.createdAt DESC
+    `);
+
+    const formatted = customers.map((c) => ({
+      id: c.id,
+      name: c.name || "Customer",
+      email: c.email || "-",
+      phone: c.phone || "-",
+      alternatePhone: c.alternatePhone || null,
+      isActive: c.isActive === 1 || c.isActive === true,
+      orderCount: Number(c.orderCount || 0),
+      totalSpend: Number(c.totalSpend || 0),
+      createdAt: c.createdAt,
+    }));
+
+    return NextResponse.json({ customers: formatted });
   } catch (e: any) {
+    console.error("Admin customers fetch error:", e);
     return NextResponse.json({ customers: [] });
   }
 }
-
