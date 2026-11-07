@@ -12,15 +12,38 @@ export async function GET(request: Request) {
   }
 
   try {
-    const orders = await query(`
-      SELECT o.*, c.name as customerName, c.email as customerEmail, c.phone as customerPhone
+    const orders = await query<any[]>(`
+      SELECT o.*, c.name as customerName, c.email as customerEmail, c.phone as customerPhone,
+             (SELECT COUNT(*) FROM order_items oi WHERE oi.orderId = o.id) as itemCount
       FROM orders o
       LEFT JOIN customers c ON o.customerId = c.id
       ORDER BY o.createdAt DESC
     `);
-    return NextResponse.json({ orders });
+
+    const formatted = orders.map((o) => {
+      let parsedAddress = o.deliveryAddress;
+      if (typeof o.deliveryAddress === "string") {
+        try {
+          parsedAddress = JSON.parse(o.deliveryAddress);
+        } catch {
+          parsedAddress = { raw: o.deliveryAddress };
+        }
+      }
+
+      return {
+        ...o,
+        customerName: o.customerName || parsedAddress?.fullName || "Guest Customer",
+        customerPhone: o.customerPhone || parsedAddress?.phone || "-",
+        customerEmail: o.customerEmail || parsedAddress?.email || "-",
+        deliveryAddress: parsedAddress,
+        itemCount: Number(o.itemCount || 0),
+        totalAmount: Number(o.totalAmount || 0),
+      };
+    });
+
+    return NextResponse.json({ orders: formatted });
   } catch (e: any) {
+    console.error("Admin orders error:", e);
     return NextResponse.json({ orders: [] });
   }
 }
-

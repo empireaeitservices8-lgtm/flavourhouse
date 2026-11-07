@@ -54,13 +54,27 @@ export async function GET(
         parsedAddress = { raw: order.deliveryAddress };
       }
     }
+    if (!parsedAddress || typeof parsedAddress !== "object") {
+      parsedAddress = {};
+    }
+
+    const customerObj = {
+      name: order.customerName || parsedAddress.fullName || "Guest Customer",
+      email: order.customerEmail || parsedAddress.email || "-",
+      phone: order.customerPhone || parsedAddress.phone || "-",
+      alternatePhone: parsedAddress.alternatePhone || null,
+    };
 
     return NextResponse.json({
       order: {
         ...order,
         deliveryAddress: parsedAddress,
-        items,
-        history,
+        customer: customerObj,
+        customerName: customerObj.name,
+        customerEmail: customerObj.email,
+        customerPhone: customerObj.phone,
+        items: items || [],
+        history: history || [],
       },
     });
   } catch (e: any) {
