@@ -3,18 +3,25 @@ import { cookies } from "next/headers";
 import fs from "fs";
 import path from "path";
 
+import { getBearerToken, verifyToken } from "@/lib/auth";
+
 export const dynamic = "force-dynamic";
 
 const TOKEN_VALUE = "flavorhouse_auth_session_token_valid";
 
-async function isAuthorized(): Promise<boolean> {
+async function isAuthorized(request: Request): Promise<boolean> {
+  const token = getBearerToken(request);
+  if (token) {
+    const decoded = verifyToken(token);
+    if (decoded && decoded.role === "admin") return true;
+  }
   const cookieStore = await cookies();
-  const token = cookieStore.get("fh_admin_token");
-  return Boolean(token && token.value === TOKEN_VALUE);
+  const cToken = cookieStore.get("fh_admin_token");
+  return Boolean(cToken && cToken.value === TOKEN_VALUE);
 }
 
 export async function POST(request: Request) {
-  if (!(await isAuthorized())) {
+  if (!(await isAuthorized(request))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

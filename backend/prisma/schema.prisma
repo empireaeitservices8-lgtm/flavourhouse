@@ -1,0 +1,163 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Admin {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("admins")
+}
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  slug        String    @unique
+  description String?   @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id            Int         @id @default(autoincrement())
+  name          String
+  slug          String      @unique
+  description   String?     @db.Text
+  image         String      @db.Text
+  categoryId    Int?
+  category      Category?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  price         Float
+  discountPrice Float?
+  stock         Int         @default(100)
+  SKU           String?     @unique
+  isActive      Boolean     @default(true)
+  isFeatured    Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  orderItems    OrderItem[]
+
+  @@index([categoryId])
+  @@map("products")
+}
+
+model Customer {
+  id             Int       @id @default(autoincrement())
+  name           String
+  email          String
+  phone          String
+  alternatePhone String?
+  passwordHash   String?
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  orders         Order[]
+  addresses      Address[]
+
+  @@index([phone])
+  @@index([email])
+  @@map("customers")
+}
+
+model Address {
+  id         Int      @id @default(autoincrement())
+  customerId Int
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  fullName   String
+  phone      String
+  houseName  String
+  street     String
+  city       String
+  state      String
+  pincode    String
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([customerId])
+  @@map("addresses")
+}
+
+model Order {
+  id              Int                  @id @default(autoincrement())
+  orderNumber     String               @unique
+  customerId      Int
+  customer        Customer             @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  status          String               @default("Pending") // Pending, Confirmed, Shipped, Out for Delivery, Delivered, Cancelled
+  paymentMethod   String               @default("COD") // COD, Online
+  paymentStatus   String               @default("Pending") // Pending, Paid, Failed
+  subtotal        Float
+  deliveryCharge  Float                @default(0)
+  discount        Float                @default(0)
+  totalAmount     Float
+  deliveryAddress Json
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  items           OrderItem[]
+  statusHistory   OrderStatusHistory[]
+
+  @@index([customerId])
+  @@index([status])
+  @@index([orderNumber])
+  @@map("orders")
+}
+
+model OrderItem {
+  id                   Int      @id @default(autoincrement())
+  orderId              Int
+  order                Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId            Int?
+  product              Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productNameSnapshot  String
+  productImageSnapshot String?  @db.Text
+  quantity             Int
+  unitPrice            Float
+  totalPrice           Float
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+model OrderStatusHistory {
+  id             Int      @id @default(autoincrement())
+  orderId        Int
+  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  previousStatus String
+  newStatus      String
+  changedAt      DateTime @default(now())
+  changedBy      String   @default("Admin")
+
+  @@index([orderId])
+  @@map("order_status_history")
+}
+
+model StoreSettings {
+  id                Int      @id @default(autoincrement())
+  storeName         String   @default("Flavour House")
+  logo              String?  @db.Text
+  email             String   @default("support@flavorhousefoods.com")
+  phone             String   @default("+91 9876543210")
+  address           String   @default("123 Organic Street, Kochi, Kerala, India")
+  deliveryCharge    Float    @default(50)
+  minFreeDelivery   Float    @default(500)
+  storeAvailability Boolean  @default(true)
+  facebookUrl       String?  @default("https://www.facebook.com/share/17rmar29kM/")
+  instagramUrl      String?  @default("https://www.instagram.com/flavorhouse.in")
+  youtubeUrl        String?  @default("https://youtube.com/@flavorhousefoods")
+  updatedAt         DateTime @updatedAt
+
+  @@map("store_settings")
+}
+

@@ -8,7 +8,7 @@ export function HeroSection({ acf }: { acf?: any }) {
   return (
     <section className="relative min-h-[90vh] flex items-center bg-brand-cream overflow-hidden">
       {/* Background Texture Overlay */}
-      <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'url("https://www.transparenttextures.com/patterns/kraft-paper.png")' }}></div>
+      <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#b8945f 0.8px, transparent 0.8px)', backgroundSize: '16px 16px' }}></div>
       
       {/* Organic Shapes Background */}
       <div className="absolute top-0 right-0 w-[50vw] h-[100vh] bg-brand-sand rounded-l-full blur-[100px] opacity-60"></div>

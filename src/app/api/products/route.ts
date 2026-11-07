@@ -1,36 +1,65 @@
 import { NextResponse } from "next/server";
-import { api } from "@/lib/woocommerce";
-import { getAllStoredProducts } from "@/lib/products-store";
+import { query } from "@/lib/db";
+import { PRODUCTS } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    // Return admin-managed stored products if WooCommerce is not configured
-    if (!process.env.WC_STORE_URL || !process.env.WC_CONSUMER_KEY) {
-      const stored = getAllStoredProducts();
-      return NextResponse.json(stored);
+    const { searchParams } = new URL(request.url);
+    const category = searchParams.get("category");
+    const activeOnly = searchParams.get("all") !== "true";
+
+    let sql = `
+      SELECT p.id, p.name, p.slug, p.description, p.image, p.price, p.discountPrice,
+             p.stock, p.SKU, p.isActive, p.isFeatured, c.name as category, p.categoryId
+      FROM products p
+      LEFT JOIN categories c ON p.categoryId = c.id
+    `;
+    const conditions: string[] = [];
+    const params: any[] = [];
+
+    if (activeOnly) {
+      conditions.push("p.isActive = 1");
     }
 
-    const response = await api.get("products", {
-      per_page: 50,
-      status: "publish",
-    });
+    if (category && category !== "All") {
+      conditions.push("(c.name = ? OR c.slug = ?)");
+      params.push(category, category.toLowerCase());
+    }
 
-    const products = response.data.map((product: any) => ({
-      id: product.id,
-      name: product.name,
-      category: product.categories[0]?.name || "Uncategorized",
-      price: parseFloat(product.price || "0"),
-      image: product.images[0]?.src || "https://images.unsplash.com/photo-1598720290281-9f26ae6d6f81", // Fallback image
-      description: product.short_description || product.description,
-    }));
+    if (conditions.length > 0) {
+      sql += " WHERE " + conditions.join(" AND ");
+    }
 
-    return NextResponse.json(products);
+    sql += " ORDER BY p.id ASC";
+
+    const rows = await query(sql, params);
+
+    if (Array.isArray(rows) && rows.length > 0) {
+      const formatted = rows.map((p) => ({
+        id: p.id,
+        name: p.name,
+        slug: p.slug,
+        category: p.category || "Pasta",
+        categoryId: p.categoryId,
+        price: Number(p.price),
+        discountPrice: p.discountPrice ? Number(p.discountPrice) : null,
+        image: p.image || "https://images.unsplash.com/photo-1598720290281-9f26ae6d6f81",
+        description: p.description,
+        stock: p.stock ?? 100,
+        inStock: (p.stock ?? 100) > 0,
+        isActive: Boolean(p.isActive),
+        isFeatured: Boolean(p.isFeatured),
+        SKU: p.SKU,
+      }));
+      return NextResponse.json(formatted);
+    }
   } catch (error: any) {
-    console.error("WooCommerce fetch error, returning stored products:", error.response?.data || error.message);
-    const stored = getAllStoredProducts();
-    return NextResponse.json(stored);
+    console.warn("MySQL products fetch failed, using fallback:", error.message);
   }
+
+  // Resilient fallback: Always return seed products so website never goes down
+  return NextResponse.json(PRODUCTS);
 }

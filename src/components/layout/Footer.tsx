@@ -80,6 +80,7 @@ export function Footer() {
               <li><Link href="/products" className="hover:text-brand-primary transition-colors">Shop All Products</Link></li>
               <li><Link href="/combo-offers" className="hover:text-brand-primary transition-colors">Combo Offers</Link></li>
               <li><Link href="/recipes" className="hover:text-brand-primary transition-colors">Recipes</Link></li>
+              <li><Link href="/track-order" className="hover:text-brand-primary transition-colors">Track Your Order</Link></li>
               <li><Link href="/contact" className="hover:text-brand-primary transition-colors">Contact Us</Link></li>
             </ul>
           </div>

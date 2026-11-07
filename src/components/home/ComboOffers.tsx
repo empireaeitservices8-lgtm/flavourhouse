@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight, Sparkles, ShoppingBag } from "lucide-react";
+import { ArrowRight, Sparkles, ShoppingBag, Check } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useCart } from "@/context/CartContext";
 
@@ -16,20 +16,28 @@ export function ComboOffers({ acf }: { acf?: any }) {
     fetch("/api/products/", { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => {
-        // Find products that might be combos, or just take the first 3
-        let combos = data.filter((p: any) => 
-          p.category.toLowerCase().includes("combo") || 
-          p.category.toLowerCase().includes("bundle") ||
-          p.name.toLowerCase().includes("bundle")
-        );
-        
-        if (combos.length === 0) {
-          combos = data.slice(0, 3);
-        } else {
-          combos = combos.slice(0, 3);
+        if (Array.isArray(data)) {
+          let combos = data.filter((p: any) => {
+            const cat = (p.category || "").toLowerCase();
+            const name = (p.name || "").toLowerCase();
+            return (
+              cat.includes("combo") ||
+              cat.includes("bundle") ||
+              name.includes("bundle") ||
+              name.includes("pack") ||
+              name.includes("delight") ||
+              p.isFeatured
+            );
+          });
+
+          if (combos.length === 0) {
+            combos = data.slice(0, 3);
+          } else {
+            combos = combos.slice(0, 3);
+          }
+
+          setProducts(combos);
         }
-        
-        setProducts(combos);
         setLoading(false);
       })
       .catch((err) => {
@@ -59,7 +67,7 @@ export function ComboOffers({ acf }: { acf?: any }) {
       <div className="absolute inset-0 bg-gradient-to-br from-[#3F3424] via-[#6E5432] to-[#3F3424]"></div>
       
       {/* Texture Overlay */}
-      <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'url("https://www.transparenttextures.com/patterns/black-paper.png")' }}></div>
+      <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#ffffff 0.8px, transparent 0.8px)', backgroundSize: '16px 16px' }}></div>
 
       <div className="container mx-auto px-6 md:px-12 relative z-10">
         <div className="flex flex-col md:flex-row items-center justify-between mb-16 gap-8">
@@ -68,61 +76,89 @@ export function ComboOffers({ acf }: { acf?: any }) {
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-primary/20 border border-brand-primary/50 text-brand-cream font-button text-sm mb-4"
+              className="inline-flex items-center gap-2 bg-[#B8945F]/30 border border-[#B8945F]/50 px-4 py-1.5 rounded-full text-brand-sand text-xs font-button font-medium uppercase tracking-widest mb-4"
             >
-              <Sparkles className="w-4 h-4 text-brand-primary animate-pulse" />
-              {acf?.combo_badge || "OUR TOP PICKS"}
+              <Sparkles className="w-3.5 h-3.5 text-[#B8945F]" />
+              <span>{acf?.combos_badge || "Special Curations"}</span>
             </motion.div>
-            <h2 className="font-heading text-4xl md:text-6xl font-bold text-white mb-4">
-              {acf?.combo_title || "Featured Products"}
+            
+            <h2 className="font-heading text-4xl md:text-5xl font-bold text-white mb-4">
+              {acf?.combos_title || "Value Combo Packs"}
             </h2>
-            <p className="font-sans text-brand-sand/80 text-lg max-w-xl">
-              {acf?.combo_description || "Get the best of Flavor House with our curated organic selection. Perfect for modern, healthy living."}
+            <p className="font-sans text-brand-sand/80 max-w-xl text-lg">
+              {acf?.combos_subtitle || "Get the best of nutrition and flavour combined into special discounted bundles."}
             </p>
           </div>
-          <Link href={acf?.combo_button_link || "/combo-offers"} className="shrink-0 flex items-center gap-2 text-brand-cream hover:text-brand-primary font-button border-b border-brand-cream hover:border-brand-primary pb-1 transition-all">
-            {acf?.combo_button_text || "View All Combos"} <ArrowRight className="w-4 h-4" />
+
+          <Link
+            href="/combo-offers"
+            className="group flex items-center gap-3 bg-brand-sand text-brand-dark px-8 py-4 rounded-full font-button text-sm uppercase tracking-wider font-semibold hover:bg-white transition-all shadow-lg hover:shadow-xl self-start md:self-auto"
+          >
+            <span>{acf?.combos_button_text || "Explore All Combos"}</span>
+            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {products.map((product, index) => (
-            <Link href={`/products/${product.id}`} key={product.id}>
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-white/10 backdrop-blur-md rounded-[2rem] p-6 border border-white/20 hover:border-brand-primary/50 transition-colors group h-full flex flex-col"
-              >
-                <div className="relative h-64 rounded-xl overflow-hidden mb-6 bg-brand-cream">
-                  <img 
-                    src={product.image} 
-                    alt={product.name} 
-                    className="w-full h-full object-cover mix-blend-multiply group-hover:scale-105 transition-transform duration-500"
+        {/* Product Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {products.map((product, idx) => (
+            <motion.div
+              key={product.id || idx}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: idx * 0.15 }}
+              className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-6 flex flex-col justify-between hover:bg-white/15 transition-all duration-300 group"
+            >
+              <div>
+                <div className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-6 bg-brand-dark/40">
+                  <img
+                    src={product.image || "https://images.unsplash.com/photo-1598720290281-9f26ae6d6f81"}
+                    alt={product.name}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                </div>
-                <h3 className="font-heading text-2xl font-bold text-white mb-2 line-clamp-1">{product.name}</h3>
-                <p className="font-sans text-brand-sand/80 text-sm mb-6 line-clamp-2 flex-grow">
-                  {product.description?.replace(/<[^>]*>?/gm, '') || product.category}
-                </p>
-                <div className="flex items-center justify-between mt-auto">
-                  <div className="flex flex-col">
-                    <span className="text-white font-heading text-2xl font-bold">₹{product.price}</span>
+                  <div className="absolute top-3 left-3 bg-brand-primary text-white text-[10px] font-button font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow">
+                    {product.category || "Featured"}
                   </div>
-                  <button 
-                    onClick={(e) => handleAddToCart(product, e)}
-                    className={`px-6 py-2.5 rounded-full font-button text-sm transition-colors flex items-center gap-2 ${
-                      addedId === product.id 
-                        ? "bg-green-600 text-white" 
-                        : "bg-brand-primary text-white hover:bg-brand-cream hover:text-brand-dark"
-                    }`}
-                  >
-                    {addedId === product.id ? "Added!" : "Add to Cart"}
-                  </button>
                 </div>
-              </motion.div>
-            </Link>
+
+                <h3 className="font-heading text-2xl font-bold text-white mb-2 line-clamp-1">
+                  {product.name}
+                </h3>
+                
+                <p className="font-sans text-brand-sand/70 text-sm mb-6 line-clamp-2">
+                  {product.description || "Nutritious and delicious blend of ancient grains crafted for your health and vitality."}
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between pt-4 border-t border-white/10">
+                <div>
+                  <span className="text-xs text-brand-sand/60 block font-sans">Special Price</span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-bold text-white font-button">₹{product.price}</span>
+                    {product.discountPrice && (
+                      <span className="text-sm text-brand-sand/50 line-through">₹{product.discountPrice}</span>
+                    )}
+                  </div>
+                </div>
+
+                <button
+                  onClick={(e) => handleAddToCart(product, e)}
+                  className={`p-3.5 rounded-full transition-all shadow-md cursor-pointer ${
+                    addedId === product.id
+                      ? "bg-emerald-500 text-white"
+                      : "bg-brand-primary text-white hover:bg-brand-secondary hover:scale-105"
+                  }`}
+                  aria-label="Add to cart"
+                >
+                  {addedId === product.id ? (
+                    <Check className="w-5 h-5" />
+                  ) : (
+                    <ShoppingBag className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+            </motion.div>
           ))}
         </div>
       </div>

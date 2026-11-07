@@ -1,113 +1,55 @@
 import { NextResponse } from "next/server";
-import { api } from "@/lib/woocommerce";
+
 export const dynamic = "force-dynamic";
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || "http://localhost:4000";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { formData, cart, paymentMethod, shippingFee, transactionId } = body;
+    const { formData, cart, paymentMethod } = body;
 
-    // WooCommerce requires first_name and last_name, so we split fullName if possible
-    const nameParts = formData.fullName.trim().split(" ");
-    const firstName = nameParts[0] || "Customer";
-    const lastName = nameParts.slice(1).join(" ") || "";
-
-    const isPaid = paymentMethod === "online";
-
-    // Standardize Indian State codes for WooCommerce and Shiprocket integration
-    const stateCodeMap: Record<string, string> = {
-      "Kerala": "KL",
-      "Tamil Nadu": "TN",
-      "Karnataka": "KA",
-      "Maharashtra": "MH",
-      "Andhra Pradesh": "AP",
-      "Telangana": "TS",
-      "Delhi": "DL",
-      "Gujarat": "GJ",
-      "Uttar Pradesh": "UP",
-    };
-    const stateCode = stateCodeMap[formData.state] || formData.state || "KL";
-
-    const orderData = {
-      payment_method: isPaid ? "razorpay" : "cod",
-      payment_method_title: paymentMethod === "cod" ? "Cash on Delivery" : "Razorpay (Online)",
-      set_paid: isPaid,
-      status: "processing", // Standard WooCommerce status for new actionable orders, picked up instantly by Shiprocket
-      transaction_id: transactionId || "",
-      billing: {
-        first_name: firstName,
-        last_name: lastName,
-        address_1: formData.address,
-        city: formData.city,
-        state: stateCode,
-        postcode: formData.pincode,
-        country: "IN",
-        email: formData.email,
-        phone: formData.phone,
-      },
-      shipping: {
-        first_name: firstName,
-        last_name: lastName,
-        address_1: formData.address,
-        city: formData.city,
-        state: stateCode,
-        postcode: formData.pincode,
-        country: "IN",
-      },
+    // Convert old format to backend format if necessary
+    const customer = {
+      fullName: formData?.fullName || "Guest Customer",
+      email: formData?.email || "customer@example.com",
+      phone: formData?.phone || "9999999999",
+      alternatePhone: formData?.alternatePhone || null,
     };
 
-    // Separate regular WooCommerce products and custom bundle/combo items
-    const lineItems: any[] = [];
-    const feeLines: any[] = [];
-    const comboNotes: string[] = [];
+    const deliveryAddress = {
+      houseName: formData?.houseName || formData?.address || "Address",
+      street: formData?.street || formData?.address || "Street",
+      city: formData?.city || "Kochi",
+      district: formData?.district || "",
+      state: formData?.state || "Kerala",
+      pincode: formData?.pincode || "682001",
+      landmark: formData?.landmark || "",
+    };
 
-    cart.forEach((item: any) => {
-      const numId = parseInt(item.id, 10);
-      if (!isNaN(numId) && numId > 0) {
-        lineItems.push({
-          product_id: numId,
-          quantity: item.quantity,
-        });
-      } else {
-        // Custom combo/bundle from ACF without standard WooCommerce product ID
-        feeLines.push({
-          name: `${item.name} (Qty: ${item.quantity})`,
-          total: (item.price * item.quantity).toString(),
-        });
-        comboNotes.push(`${item.name} x${item.quantity}`);
-      }
+    const items = (cart || []).map((item: any) => ({
+      productId: item.id,
+      name: item.name,
+      quantity: item.quantity,
+      price: item.price,
+      image: item.image,
+    }));
+
+    const res = await fetch(`${BACKEND_URL}/api/orders`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        customer,
+        deliveryAddress,
+        items,
+        paymentMethod: paymentMethod === "online" ? "Online" : "COD",
+      }),
     });
 
-    const fullOrderData = {
-      ...orderData,
-      line_items: lineItems,
-      fee_lines: feeLines,
-      shipping_lines: [
-        {
-          method_id: "flat_rate",
-          method_title: "Flat Rate",
-          total: shippingFee.toString(),
-        },
-      ],
-      customer_note: comboNotes.length > 0 ? `Bundles Ordered: ${comboNotes.join(", ")}` : "",
-    };
-
-    if (!process.env.WC_STORE_URL || !process.env.WC_CONSUMER_KEY) {
-      console.log("WooCommerce not configured, returning mock order.", fullOrderData);
-      return NextResponse.json({ id: "FH-MOCK-" + Math.floor(1000 + Math.random() * 9000) });
-    }
-
-    const response = await api.post("orders", fullOrderData);
-    
-    return NextResponse.json({
-      id: response.data.id,
-      status: response.data.status,
-    });
-  } catch (error: any) {
-    console.error("WooCommerce checkout error:", error.response?.data || error.message);
-    return NextResponse.json(
-      { error: "Failed to process order" },
-      { status: 500 }
-    );
+    const data = await res.json();
+    return NextResponse.json(data, { status: res.status });
+  } catch (err: any) {
+    console.error("Next.js checkout forward error:", err);
+    return NextResponse.json({ error: "Failed to connect to backend: " + err.message }, { status: 500 });
   }
 }

@@ -2,13 +2,17 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingBag, X, Plus, Minus, Trash2, ArrowRight, CheckCircle2 } from "lucide-react";
+import { ShoppingBag, X, Plus, Minus, Trash2, ArrowRight, CheckCircle2, Truck } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useRouter } from "next/navigation";
 
 export function CartDrawer() {
   const { cart, isCartOpen, closeCart, updateQuantity, removeFromCart, subtotal, totalItems } = useCart();
   const router = useRouter();
+
+  const deliveryCharge = !subtotal || subtotal <= 0 ? 0 : subtotal <= 500 ? 70 : subtotal <= 1000 ? 100 : 0;
+  const finalTotal = subtotal + deliveryCharge;
+  const amountForFreeDelivery = subtotal > 0 && subtotal <= 1000 ? 1001 - subtotal : 0;
 
   const handleCheckout = () => {
     closeCart();
@@ -130,25 +134,40 @@ export function CartDrawer() {
             {cart.length > 0 && (
               <div className="p-6 border-t border-brand-border bg-brand-cream/30 space-y-4">
                 <div className="space-y-2 font-sans text-sm">
-                  <div className="flex justify-between text-brand-text/80">
+                  <div className="flex justify-between text-brand-text/70 text-xs">
                     <span>Subtotal</span>
-                    <span className="font-bold text-brand-dark">₹{subtotal}</span>
+                    <span className="font-semibold text-brand-dark">₹{subtotal}</span>
                   </div>
-                  <div className="flex justify-between text-brand-text/80">
-                    <span>Shipping</span>
-                    <span className="text-green-600 font-medium">
-                      {subtotal >= 500 ? "FREE" : "₹50"}
+
+                  <div className="flex justify-between items-center text-xs text-brand-text/70">
+                    <span className="flex items-center gap-1">
+                      <Truck className="w-3.5 h-3.5 text-brand-primary" />
+                      Delivery
                     </span>
+                    {deliveryCharge === 0 ? (
+                      <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-full text-[11px]">
+                        FREE
+                      </span>
+                    ) : (
+                      <span className="font-semibold text-brand-dark">₹{deliveryCharge}</span>
+                    )}
                   </div>
-                  <div className="flex justify-between text-brand-dark font-bold text-lg pt-2 border-t border-brand-border">
+
+                  {amountForFreeDelivery > 0 && (
+                    <div className="bg-amber-50/80 border border-amber-200/80 rounded-xl p-2.5 text-[11px] text-amber-900 leading-snug">
+                      ✨ Add <span className="font-bold">₹{amountForFreeDelivery}</span> more for <span className="font-bold">FREE Delivery</span>!
+                    </div>
+                  )}
+
+                  <div className="flex justify-between text-brand-dark font-bold text-lg pt-1 border-t border-brand-border/60">
                     <span>Total</span>
-                    <span>₹{subtotal >= 500 ? subtotal : subtotal + 50}</span>
+                    <span className="text-brand-primary">₹{finalTotal}</span>
                   </div>
                 </div>
 
                 <button
                   onClick={handleCheckout}
-                  className="w-full bg-brand-primary text-white font-button uppercase tracking-wider py-4 rounded-full hover:bg-brand-dark transition-all duration-300 shadow-lg flex items-center justify-center gap-2 group"
+                  className="w-full bg-brand-primary text-white font-button uppercase tracking-wider py-4 rounded-full hover:bg-brand-dark transition-all duration-300 shadow-lg flex items-center justify-center gap-2 group cursor-pointer"
                 >
                   Proceed to Checkout
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

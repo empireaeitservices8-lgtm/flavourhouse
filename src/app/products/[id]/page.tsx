@@ -2,67 +2,41 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { ProductDetailsClient } from "@/components/products/ProductDetailsClient";
-import { api } from "@/lib/woocommerce";
-import { getStoredProductById, getAllStoredProducts } from "@/lib/products-store";
+import { PRODUCTS } from "@/lib/data";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 60;
 
-// We remove generateStaticParams so this page dynamically renders on every request
-// ensuring any new product added in WooCommerce is immediately available.
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || "http://localhost:4000";
 
 export default async function SingleProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   
-  let product: any;
+  let product: any = null;
   let relatedProducts: any[] = [];
 
   try {
-    if (!process.env.WC_STORE_URL || !process.env.WC_CONSUMER_KEY) {
-      throw new Error("No WooCommerce configured");
+    const res = await fetch(`${BACKEND_URL}/api/products/${id}`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(3000),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      product = data;
+      relatedProducts = data.relatedProducts || [];
     }
-
-    // Fetch product from WooCommerce
-    const response = await api.get(`products/${id}`);
-    const data = response.data;
-
-    product = {
-      id: data.id,
-      name: data.name,
-      category: data.categories[0]?.name || "Uncategorized",
-      price: parseFloat(data.price || "0"),
-      image: data.images[0]?.src || "https://images.unsplash.com/photo-1598720290281-9f26ae6d6f81",
-      description: data.short_description || data.description,
-    };
-
-    // Fetch related products from same category
-    const catId = data.categories[0]?.id;
-    if (catId) {
-      const relatedRes = await api.get("products", {
-        category: catId,
-        per_page: 5,
-      });
-      
-      relatedProducts = relatedRes.data
-        .filter((p: any) => p.id !== data.id)
-        .slice(0, 4)
-        .map((p: any) => ({
-          id: p.id,
-          name: p.name,
-          category: p.categories[0]?.name || "Uncategorized",
-          price: parseFloat(p.price || "0"),
-          image: p.images[0]?.src || "https://images.unsplash.com/photo-1598720290281-9f26ae6d6f81",
-        }));
-    }
-
   } catch (error) {
-    // Fallback to stored products
-    product = getStoredProductById(id);
-    if (product) {
-      const allStored = getAllStoredProducts();
-      relatedProducts = allStored
-        .filter((p) => p.category === product.category && p.id.toString() !== id.toString())
-        .slice(0, 4);
+    console.warn("Failed to fetch product from backend, trying fallback:", error);
+  }
+
+  if (!product) {
+    const fallback = PRODUCTS.find((p) => p.id.toString() === id.toString() || p.name.toLowerCase().replace(/\s+/g, "-") === id.toLowerCase());
+    if (fallback) {
+      product = {
+        ...fallback,
+        description: `${fallback.name} - Premium healthy organic millet product by Flavor House.`,
+        inStock: true,
+      };
+      relatedProducts = PRODUCTS.filter((p) => p.category === fallback.category && p.id !== fallback.id).slice(0, 4);
     }
   }
 

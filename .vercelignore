@@ -1,0 +1,9 @@
+node_modules
+.next
+backend/node_modules
+*.zip
+*.tar
+*.gz
+scratch_*
+hostinger_deploy.zip
+

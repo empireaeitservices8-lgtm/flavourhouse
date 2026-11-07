@@ -142,10 +142,13 @@ export function ProductDetailsClient({ product }: { product: Product }) {
         </button>
       </div>
       
-      {/* Delivery Info */}
+      {/* Product Assurance */}
       <div className="mt-8 bg-white/60 backdrop-blur-sm p-5 rounded-2xl border border-brand-border text-sm font-sans text-brand-dark space-y-2">
         <p className="flex items-center gap-3">
-          <span className="text-xl">🚚</span> <strong>Free Delivery</strong> on orders over ₹500
+          <span className="text-xl">🚚</span>
+          <span>
+            <strong>Delivery:</strong> ₹70 (upto ₹500) • ₹100 (₹501–₹1,000) • <span className="text-emerald-700 font-bold">FREE above ₹1,000</span>
+          </span>
         </p>
         <p className="flex items-center gap-3">
           <span className="text-xl">⏱️</span> Delivery usually takes 3-5 business days

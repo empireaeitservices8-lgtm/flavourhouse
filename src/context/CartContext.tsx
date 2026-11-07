@@ -29,7 +29,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  // Load cart from localStorage on mount
+  // Load cart from localStorage on mount & auto-sync prices with current store prices
   useEffect(() => {
     try {
       const savedCart = localStorage.getItem("flavorhouse_cart");
@@ -39,6 +39,46 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.error(e);
     }
+
+    // Background price sync with latest store product prices
+    async function syncPrices() {
+      try {
+        const res = await fetch("/api/products", { cache: "no-store" });
+        if (res.ok) {
+          const products = await res.json();
+          if (Array.isArray(products) && products.length > 0) {
+            setCart((prev) => {
+              let updated = false;
+              const synced = prev.map((cartItem) => {
+                const match = products.find(
+                  (p: any) => String(p.id) === String(cartItem.id) || p.name === cartItem.name
+                );
+                if (match) {
+                  const currentPrice = Number(
+                    match.discountPrice && match.discountPrice > 0 ? match.discountPrice : match.price
+                  );
+                  if (cartItem.price !== currentPrice || (match.image && cartItem.image !== match.image)) {
+                    updated = true;
+                    return {
+                      ...cartItem,
+                      price: currentPrice,
+                      name: match.name || cartItem.name,
+                      image: match.image || cartItem.image,
+                    };
+                  }
+                }
+                return cartItem;
+              });
+              return updated ? synced : prev;
+            });
+          }
+        }
+      } catch (err) {
+        // Fallback silently if offline
+      }
+    }
+
+    syncPrices();
   }, []);
 
   // Save cart to localStorage on change
@@ -51,14 +91,22 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [cart]);
 
   const addToCart = (item: Omit<CartItem, "quantity">, qtyToAdd = 1) => {
+    const itemPrice = Number(item.price);
     setCart((prev) => {
-      const existing = prev.find((i) => i.id === item.id);
+      const existing = prev.find((i) => String(i.id) === String(item.id));
       if (existing) {
         return prev.map((i) =>
-          i.id === item.id ? { ...i, quantity: i.quantity + qtyToAdd } : i
+          String(i.id) === String(item.id)
+            ? {
+                ...i,
+                ...item,
+                price: itemPrice, // Always adopt the updated price
+                quantity: i.quantity + qtyToAdd,
+              }
+            : i
         );
       }
-      return [...prev, { ...item, quantity: qtyToAdd }];
+      return [...prev, { ...item, price: itemPrice, quantity: qtyToAdd }];
     });
     setIsCartOpen(true);
   };

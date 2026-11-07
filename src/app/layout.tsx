@@ -5,22 +5,26 @@ import "./globals.css";
 const playfair = Playfair_Display({
   variable: "--font-playfair",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "600", "700"],
   subsets: ["latin"],
+  display: "swap",
 });
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -29,6 +33,7 @@ export const metadata: Metadata = {
 };
 
 import { CartProvider } from "@/context/CartContext";
+import { CustomerAuthProvider } from "@/context/CustomerAuthContext";
 import { MainLayoutWrapper } from "@/components/layout/MainLayoutWrapper";
 
 export default function RootLayout({
@@ -42,9 +47,11 @@ export default function RootLayout({
       className={`${playfair.variable} ${cormorant.variable} ${inter.variable} ${plusJakarta.variable} antialiased`}
     >
       <body className="font-sans bg-background text-foreground overflow-x-hidden min-h-screen flex flex-col">
-        <CartProvider>
-          <MainLayoutWrapper>{children}</MainLayoutWrapper>
-        </CartProvider>
+        <CustomerAuthProvider>
+          <CartProvider>
+            <MainLayoutWrapper>{children}</MainLayoutWrapper>
+          </CartProvider>
+        </CustomerAuthProvider>
       </body>
     </html>
   );

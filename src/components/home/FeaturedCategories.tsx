@@ -1,50 +1,37 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-const CATEGORIES = [
-  {
-    id: "pasta",
-    title: "Pasta",
-    subtitle: "7 Varieties",
-    image: "/images/pasta.png",
-    className: "col-span-1 md:col-span-2 md:row-span-2",
-    link: "/products?category=Pasta",
-  },
-  {
-    id: "noodles",
-    title: "Noodles",
-    subtitle: "8 Varieties",
-    image: "/images/noodles.png",
-    className: "col-span-1",
-    link: "/products?category=Noodles",
-  },
-  {
-    id: "vermicelli",
-    title: "Vermicelli",
-    subtitle: "7 Varieties",
-    image: "/images/vermicelli.png",
-    className: "col-span-1",
-    link: "/products?category=Vermicelli",
-  },
-  {
-    id: "cookies",
-    title: "Cookies",
-    subtitle: "12 Varieties",
-    image: "/images/cookies.png",
-    className: "col-span-1 md:col-span-2",
-    link: "/products?category=Cookies",
-  },
-];
-
 export function FeaturedCategories({ acf }: { acf?: any }) {
+  const [counts, setCounts] = useState<{ [key: string]: number }>({});
+
+  useEffect(() => {
+    fetch("/api/products/", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          const tally: { [key: string]: number } = {};
+          data.forEach((p: any) => {
+            const cat = (p.category || "").toLowerCase();
+            if (cat.includes("pasta") || cat.includes("macaroni")) tally.pasta = (tally.pasta || 0) + 1;
+            else if (cat.includes("noodle")) tally.noodles = (tally.noodles || 0) + 1;
+            else if (cat.includes("vermicelli")) tally.vermicelli = (tally.vermicelli || 0) + 1;
+            else if (cat.includes("cookie")) tally.cookies = (tally.cookies || 0) + 1;
+          });
+          setCounts(tally);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const dynamicCategories = [
     {
       id: "pasta",
       title: acf?.category_1_title || "Pasta",
-      subtitle: acf?.category_1_subtitle || "7 Varieties",
+      subtitle: counts.pasta ? `${counts.pasta} Varieties` : (acf?.category_1_subtitle || "Varieties"),
       image: acf?.category_1_image || "/images/pasta.png",
       className: "col-span-1 md:col-span-2 md:row-span-2",
       link: acf?.category_1_link || "/products?category=Pasta",
@@ -52,7 +39,7 @@ export function FeaturedCategories({ acf }: { acf?: any }) {
     {
       id: "noodles",
       title: acf?.category_2_title || "Noodles",
-      subtitle: acf?.category_2_subtitle || "8 Varieties",
+      subtitle: counts.noodles ? `${counts.noodles} Varieties` : (acf?.category_2_subtitle || "Varieties"),
       image: acf?.category_2_image || "/images/noodles.png",
       className: "col-span-1",
       link: acf?.category_2_link || "/products?category=Noodles",
@@ -60,7 +47,7 @@ export function FeaturedCategories({ acf }: { acf?: any }) {
     {
       id: "vermicelli",
       title: acf?.category_3_title || "Vermicelli",
-      subtitle: acf?.category_3_subtitle || "7 Varieties",
+      subtitle: counts.vermicelli ? `${counts.vermicelli} Varieties` : (acf?.category_3_subtitle || "Varieties"),
       image: acf?.category_3_image || "/images/vermicelli.png",
       className: "col-span-1",
       link: acf?.category_3_link || "/products?category=Vermicelli",
@@ -68,7 +55,7 @@ export function FeaturedCategories({ acf }: { acf?: any }) {
     {
       id: "cookies",
       title: acf?.category_4_title || "Cookies",
-      subtitle: acf?.category_4_subtitle || "12 Varieties",
+      subtitle: counts.cookies ? `${counts.cookies} Varieties` : (acf?.category_4_subtitle || "Varieties"),
       image: acf?.category_4_image || "/images/cookies.png",
       className: "col-span-1 md:col-span-2",
       link: acf?.category_4_link || "/products?category=Cookies",
@@ -101,23 +88,25 @@ export function FeaturedCategories({ acf }: { acf?: any }) {
                 category.className
               )}
             >
-              <Link href={category.link} className="block w-full h-full">
+              <Link href={category.link} className="block w-full h-full relative">
+                {/* Background image */}
                 <img
                   src={category.image}
                   alt={category.title}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-brand-dark/80 via-brand-dark/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-300"></div>
-                
-                <div className="absolute inset-0 p-8 flex flex-col justify-end">
-                  <div>
-                    <p className="font-sans text-brand-cream/90 text-sm mb-2 uppercase tracking-wider">
-                      {category.subtitle}
-                    </p>
-                    <h3 className="font-heading text-3xl font-bold text-white">
-                      {category.title}
-                    </h3>
-                  </div>
+
+                {/* Subtle gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-brand-dark/90 via-brand-dark/30 to-transparent"></div>
+
+                {/* Content */}
+                <div className="absolute bottom-0 left-0 right-0 p-8 flex flex-col justify-end text-white">
+                  <span className="font-button text-xs uppercase tracking-widest text-brand-sand mb-1 block">
+                    {category.subtitle}
+                  </span>
+                  <h3 className="font-heading text-2xl md:text-3xl font-bold tracking-wide">
+                    {category.title}
+                  </h3>
                 </div>
               </Link>
             </motion.div>

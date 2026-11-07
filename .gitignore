@@ -46,3 +46,6 @@ hostinger_build*/
 flavour_house_hostinger_build*/
 flavour-house-DEPLOY/
 *.zip
+
+.vercel
+.env*

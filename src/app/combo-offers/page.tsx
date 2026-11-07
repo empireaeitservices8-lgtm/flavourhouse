@@ -3,6 +3,8 @@ import { ComboOffersClient, ComboItem } from "./ComboOffersClient";
 
 export const dynamic = "force-dynamic";
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || "http://localhost:4000";
+
 const DEFAULT_COMBOS: ComboItem[] = [
   {
     id: "pasta-delight-bundle",
@@ -116,6 +118,45 @@ export default async function ComboOffersPage() {
       "Bundle and save with our curated packages. Enjoy premium organic food products delivered right to your door.",
   };
 
+  // 1. Fetch dynamic combo products added in admin panel from database
+  const dynamicDbCombos: ComboItem[] = [];
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/products`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(3000),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        const dbCombos = data.filter((p: any) => {
+          const cat = (p.category || "").toLowerCase();
+          const name = (p.name || "").toLowerCase();
+          return cat.includes("combo") || cat.includes("bundle") || name.includes("bundle") || name.includes("combo pack");
+        });
+
+        dbCombos.forEach((p: any) => {
+          const orig = p.discountPrice ? p.price : Math.round(p.price * 1.25);
+          const offer = p.discountPrice ? p.discountPrice : p.price;
+          const pct = Math.round(((orig - offer) / orig) * 100);
+          dynamicDbCombos.push({
+            id: `prod-${p.id}`,
+            name: p.name,
+            subtitle: p.category || "Special Offer Bundle",
+            description: p.description || "Freshly packed organic bundle with handpicked nutrition and natural goodness.",
+            originalPrice: orig,
+            offerPrice: offer,
+            savings: pct > 0 ? `${pct}% OFF` : "SPECIAL PRICE",
+            tag: "FRESH ARRIVAL",
+            image: p.image || "https://images.unsplash.com/photo-1542838132-92c53300491e",
+            items: [p.name, "100% Organic Ingredients", "Farm Fresh Assured"],
+          });
+        });
+      }
+    }
+  } catch (err) {
+    console.warn("Could not fetch DB combos:", err);
+  }
+
   const parsedCombos: ComboItem[] = [];
 
   // Check up to 8 potential combo slots in ACF
@@ -141,8 +182,8 @@ export default async function ComboOffersPage() {
     }
   }
 
-  // If ACF has combo offers defined, display them! Otherwise fall back to defaults
-  const combosToDisplay = parsedCombos.length > 0 ? parsedCombos : DEFAULT_COMBOS;
+  const baseCombos = parsedCombos.length > 0 ? parsedCombos : DEFAULT_COMBOS;
+  const combosToDisplay = [...dynamicDbCombos, ...baseCombos];
 
   return <ComboOffersClient hero={hero} combos={combosToDisplay} />;
 }

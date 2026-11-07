@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
+const isStandalone = process.env.BUILD_STANDALONE === "true";
+
 const nextConfig: NextConfig = {
-  trailingSlash: true,
+  ...(isStandalone ? { output: "standalone" } : {}),
   async rewrites() {
     return [
       { source: "/millet-pasta", destination: "/products" },
@@ -30,4 +32,3 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
-
