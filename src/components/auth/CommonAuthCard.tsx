@@ -310,7 +310,8 @@ export function CommonAuthCard({
                 <input
                   type={mode === "admin" ? "email" : "text"}
                   required
-                  placeholder={mode === "admin" ? "admin@flavorhouse.com" : "your.email@example.com or 9876543210"}
+                  autoComplete="off"
+                  placeholder=""
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                   className="w-full pl-11 pr-4 py-3 bg-brand-cream/30 border border-brand-border rounded-xl text-sm focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all text-brand-dark"
@@ -327,7 +328,8 @@ export function CommonAuthCard({
                 <input
                   type={showPassword ? "text" : "password"}
                   required
-                  placeholder="••••••••"
+                  autoComplete="new-password"
+                  placeholder=""
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-11 pr-11 py-3 bg-brand-cream/30 border border-brand-border rounded-xl text-sm focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all text-brand-dark"

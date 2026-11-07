@@ -250,8 +250,8 @@ export default function AdminProfilePage() {
 
           <form onSubmit={handleUpdateEmail} className="space-y-4">
             <div className="bg-[#FAF7F2] p-3 rounded-xl border border-[#E9DDC5] text-xs flex items-center justify-between">
-              <span className="text-stone-500">Current Login Email:</span>
-              <strong className="text-stone-900 font-mono font-bold">{admin?.email}</strong>
+              <span className="text-stone-500">Current Login Account:</span>
+              <strong className="text-stone-900 font-mono font-bold">••••••••@••••••.com</strong>
             </div>
 
             <div>
@@ -261,6 +261,8 @@ export default function AdminProfilePage() {
               <input
                 type="email"
                 required
+                autoComplete="off"
+                placeholder=""
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-stone-900 text-sm focus:outline-none focus:border-amber-500 focus:bg-white transition"
@@ -275,9 +277,10 @@ export default function AdminProfilePage() {
                 <input
                   type={showEmailCurrentPassword ? "text" : "password"}
                   required
+                  autoComplete="new-password"
+                  placeholder=""
                   value={emailCurrentPassword}
                   onChange={(e) => setEmailCurrentPassword(e.target.value)}
-                  placeholder="Confirm current password"
                   className="w-full pl-4 pr-11 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-stone-900 text-sm focus:outline-none focus:border-amber-500 focus:bg-white transition"
                 />
                 <button

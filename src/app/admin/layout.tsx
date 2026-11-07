@@ -211,8 +211,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 {adminUser.name?.charAt(0) || "A"}
               </div>
               <div className="overflow-hidden">
-                <p className="text-xs font-semibold text-[#FFFDF8] truncate">{adminUser.name}</p>
-                <p className="text-[11px] text-[#D8C7B0] truncate">{adminUser.email}</p>
+                <p className="text-xs font-semibold text-[#FFFDF8] truncate">{adminUser.name || "Administrator"}</p>
+                <p className="text-[10px] text-[#A17D49] font-button uppercase tracking-wider">Store Administration</p>
               </div>
             </div>
           )}
@@ -257,9 +257,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <span className="text-xs uppercase font-button font-semibold text-[#A17D49] tracking-wider">Flavour House Management Console</span>
           </div>
           <div className="flex items-center gap-3 text-xs font-medium text-[#6E5432]">
-            <span className="font-sans font-medium text-[#6E5432]">{adminUser?.name || "Admin"}</span>
-            <span className="text-[#E9DDC5]">|</span>
-            <span className="text-[#A17D49] font-mono text-[11px]">{adminUser?.email}</span>
+            <span className="font-sans font-medium text-[#6E5432]">{adminUser?.name || "Administrator"}</span>
           </div>
         </header>
 
