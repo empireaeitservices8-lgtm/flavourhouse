@@ -211,18 +211,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* Footer info & Logout */}
         <div className="p-4 border-t border-[#443625] bg-[#241D14]">
-          {adminUser && (
-            <div className="px-3 py-2 mb-2 rounded-xl bg-[#3D3021]/70 border border-[#50402F] flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-[#B8945F]/20 text-[#B8945F] font-semibold flex items-center justify-center text-xs">
-                {adminUser.name?.charAt(0) || "A"}
-              </div>
-              <div className="overflow-hidden">
-                <p className="text-xs font-semibold text-[#FFFDF8] truncate">{adminUser.name || "Administrator"}</p>
-                <p className="text-[10px] text-[#A17D49] font-button uppercase tracking-wider">Store Administration</p>
-              </div>
-            </div>
-          )}
-
           <div className="grid grid-cols-2 gap-2">
             <Link
               href="/"
@@ -261,9 +249,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <header className="hidden md:flex bg-[#FFFDF8] border-b border-[#E9DDC5] px-8 py-3.5 items-center justify-between sticky top-0 z-30 shadow-xs">
           <div className="flex items-center gap-2">
             <span className="text-xs uppercase font-button font-semibold text-[#A17D49] tracking-wider">Flavour House Management Console</span>
-          </div>
-          <div className="flex items-center gap-3 text-xs font-medium text-[#6E5432]">
-            <span className="font-sans font-medium text-[#6E5432]">{adminUser?.name || "Administrator"}</span>
           </div>
         </header>
 
