@@ -3,10 +3,10 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { ProductDetailsClient } from "@/components/products/ProductDetailsClient";
 import { PRODUCTS } from "@/lib/data";
+import { query } from "@/lib/db";
 
-export const revalidate = 60;
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || "http://localhost:4000";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function SingleProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -14,20 +14,77 @@ export default async function SingleProductPage({ params }: { params: Promise<{ 
   let product: any = null;
   let relatedProducts: any[] = [];
 
+  // 1. Direct MySQL Query
   try {
-    const res = await fetch(`${BACKEND_URL}/api/products/${id}`, {
-      cache: "no-store",
-      signal: AbortSignal.timeout(3000),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      product = data;
-      relatedProducts = data.relatedProducts || [];
+    const isNumeric = /^\d+$/.test(id);
+    let rows: any[] = [];
+
+    if (isNumeric) {
+      rows = await query(
+        `SELECT p.id, p.name, p.slug, p.description, p.image, p.price, p.discountPrice,
+                p.stock, p.SKU, p.isActive, p.isFeatured, c.name as category, p.categoryId
+         FROM products p
+         LEFT JOIN categories c ON p.categoryId = c.id
+         WHERE p.id = ?
+         LIMIT 1`,
+        [Number(id)]
+      );
+    } else {
+      rows = await query(
+        `SELECT p.id, p.name, p.slug, p.description, p.image, p.price, p.discountPrice,
+                p.stock, p.SKU, p.isActive, p.isFeatured, c.name as category, p.categoryId
+         FROM products p
+         LEFT JOIN categories c ON p.categoryId = c.id
+         WHERE p.slug = ? OR LOWER(p.name) = LOWER(?)
+         LIMIT 1`,
+        [id, id.replace(/-/g, " ")]
+      );
+    }
+
+    if (Array.isArray(rows) && rows.length > 0) {
+      const p = rows[0];
+      let relRows: any[] = [];
+      if (p.categoryId) {
+        relRows = await query(
+          `SELECT id, name, slug, price, discountPrice, image, stock, c.name as category
+           FROM products p
+           LEFT JOIN categories c ON p.categoryId = c.id
+           WHERE p.categoryId = ? AND p.id != ? AND p.isActive = 1
+           ORDER BY p.id DESC
+           LIMIT 4`,
+          [p.categoryId, p.id]
+        );
+      }
+
+      product = {
+        id: p.id,
+        name: p.name,
+        slug: p.slug,
+        category: p.category || "Pasta",
+        categoryId: p.categoryId,
+        price: Number(p.price),
+        discountPrice: p.discountPrice ? Number(p.discountPrice) : null,
+        image: p.image || "https://images.unsplash.com/photo-1598720290281-9f26ae6d6f81",
+        description: p.description || `${p.name} - Wholesome organic millet product by Flavor House.`,
+        stock: p.stock ?? 100,
+        inStock: (p.stock ?? 100) > 0,
+        isActive: Boolean(p.isActive),
+        isFeatured: Boolean(p.isFeatured),
+        SKU: p.SKU,
+      };
+
+      relatedProducts = (relRows || []).map((r: any) => ({
+        ...r,
+        price: Number(r.price),
+        discountPrice: r.discountPrice ? Number(r.discountPrice) : null,
+        category: r.category || "Pasta",
+      }));
     }
   } catch (error) {
-    console.warn("Failed to fetch product from backend, trying fallback:", error);
+    console.warn("Direct DB query for product failed, trying fallback:", error);
   }
 
+  // 2. Fallback to static PRODUCTS
   if (!product) {
     const fallback = PRODUCTS.find((p) => p.id.toString() === id.toString() || p.name.toLowerCase().replace(/\s+/g, "-") === id.toLowerCase());
     if (fallback) {

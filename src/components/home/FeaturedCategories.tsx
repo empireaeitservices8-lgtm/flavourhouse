@@ -9,7 +9,7 @@ export function FeaturedCategories({ acf }: { acf?: any }) {
   const [counts, setCounts] = useState<{ [key: string]: number }>({});
 
   useEffect(() => {
-    fetch("/api/products/", { cache: "no-store" })
+    fetch("/api/products", { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {

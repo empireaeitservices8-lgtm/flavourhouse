@@ -40,8 +40,19 @@ export default function AddProductPage() {
 
   useEffect(() => {
     fetchFromBackend("/api/categories").then((res) => {
-      if (res.ok && Array.isArray(res.data)) {
+      if (res.ok && Array.isArray(res.data) && res.data.length > 0) {
         setCategories(res.data);
+        setCategory(res.data[0].name);
+      } else {
+        fetch("/api/categories")
+          .then((r) => r.json())
+          .then((data) => {
+            if (Array.isArray(data) && data.length > 0) {
+              setCategories(data);
+              setCategory(data[0].name);
+            }
+          })
+          .catch(() => {});
       }
     });
   }, []);
@@ -175,9 +186,18 @@ export default function AddProductPage() {
 
           {/* Category */}
           <div>
-            <label className="block text-xs font-button font-semibold uppercase text-[#A17D49] tracking-wider mb-2">
-              Category *
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-xs font-button font-semibold uppercase text-[#A17D49] tracking-wider">
+                Category *
+              </label>
+              <Link
+                href="/admin/categories"
+                target="_blank"
+                className="text-[11px] font-button text-[#B8945F] hover:underline"
+              >
+                + Manage Categories
+              </Link>
+            </div>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}

@@ -29,11 +29,12 @@ export async function GET(request: Request) {
     `);
 
     const categoriesRows = await query(`SELECT name FROM categories ORDER BY name ASC`);
-    const categories = categoriesRows.map((c: any) => c.name);
+    const categories = Array.isArray(categoriesRows) ? categoriesRows.map((c: any) => c.name) : ["Pasta", "Vermicelli", "Noodles", "Cookies"];
 
     return NextResponse.json({
       products: products.map((p: any) => ({
         ...p,
+        category: p.category || "Pasta",
         price: Number(p.price),
         discountPrice: p.discountPrice ? Number(p.discountPrice) : null,
         stock: p.stock ?? 100,
@@ -84,12 +85,20 @@ export async function POST(request: Request) {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "") + "-" + Date.now().toString().slice(-4);
 
-    // Find category ID
-    let categoryId = null;
-    if (category) {
-      const catRows = await query(`SELECT id FROM categories WHERE name = ? LIMIT 1`, [category]);
+    // Find or Auto-Create Category in MySQL
+    let categoryId: number | null = null;
+    const catName = (category || "Pasta").trim();
+    if (catName) {
+      const catRows = await query(`SELECT id FROM categories WHERE LOWER(name) = LOWER(?) LIMIT 1`, [catName]);
       if (Array.isArray(catRows) && catRows.length > 0) {
         categoryId = catRows[0].id;
+      } else {
+        const catSlug = catName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+        const newCat = await query(
+          `INSERT INTO categories (name, slug, description, createdAt, updatedAt) VALUES (?, ?, '', NOW(), NOW())`,
+          [catName, catSlug]
+        );
+        categoryId = (newCat as any).insertId;
       }
     }
 
@@ -115,7 +124,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       message: "Product created successfully",
-      product: { id: insertedId, name, slug, price: cleanPrice },
+      product: { id: insertedId, name: name.trim(), slug, price: cleanPrice, category: catName },
     });
   } catch (error: any) {
     console.error("Admin POST product error:", error);
@@ -139,9 +148,17 @@ export async function PUT(request: Request) {
 
     let categoryId = null;
     if (category) {
-      const catRows = await query(`SELECT id FROM categories WHERE name = ? LIMIT 1`, [category]);
+      const cleanCat = category.trim();
+      const catRows = await query(`SELECT id FROM categories WHERE LOWER(name) = LOWER(?) LIMIT 1`, [cleanCat]);
       if (Array.isArray(catRows) && catRows.length > 0) {
         categoryId = catRows[0].id;
+      } else {
+        const catSlug = cleanCat.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+        const newCat = await query(
+          `INSERT INTO categories (name, slug, description, createdAt, updatedAt) VALUES (?, ?, '', NOW(), NOW())`,
+          [cleanCat, catSlug]
+        );
+        categoryId = (newCat as any).insertId;
       }
     }
 

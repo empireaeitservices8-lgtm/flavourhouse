@@ -30,23 +30,40 @@ function ProductsPageInner() {
     async function loadProducts() {
       setLoading(true);
       try {
-        // Try Next.js API route first
-        const res = await fetch("/api/products/", { cache: "no-store" });
-        if (res.ok) {
-          const data = await res.json();
+        const [prodRes, catRes] = await Promise.all([
+          fetch("/api/products", { cache: "no-store" }),
+          fetch("/api/categories", { cache: "no-store" }),
+        ]);
+
+        let loadedProducts: any[] = [];
+        let loadedCategories: string[] = ["Pasta", "Vermicelli", "Noodles", "Cookies"];
+
+        if (prodRes.ok) {
+          const data = await prodRes.json();
           if (Array.isArray(data)) {
-            setProducts(data);
-            const cats = [
-              "All",
-              ...Array.from(new Set<string>(data.map((p: any) => p.category).filter(Boolean))),
-            ];
-            setCategories(cats);
-            setLoading(false);
-            return;
+            loadedProducts = data;
           }
         }
+
+        if (catRes.ok) {
+          const catData = await catRes.json();
+          if (Array.isArray(catData) && catData.length > 0) {
+            loadedCategories = catData.map((c: any) => c.name || c);
+          }
+        }
+
+        if (loadedProducts.length > 0) {
+          setProducts(loadedProducts);
+
+          // Merge loaded category names with any unique categories found in products
+          const productCats = loadedProducts.map((p: any) => p.category).filter(Boolean);
+          const allUniqueCats = Array.from(new Set([...loadedCategories, ...productCats]));
+          setCategories(["All", ...allUniqueCats]);
+          setLoading(false);
+          return;
+        }
       } catch (err) {
-        console.warn("Next.js /api/products/ failed, trying direct backend...", err);
+        console.warn("Products/Categories fetch failed, trying direct backend...", err);
       }
 
       // Fallback: Direct backend fetch

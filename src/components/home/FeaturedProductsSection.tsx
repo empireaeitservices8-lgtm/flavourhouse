@@ -13,7 +13,7 @@ export function FeaturedProductsSection() {
   const { addToCart } = useCart();
 
   useEffect(() => {
-    fetch("/api/products/", { cache: "no-store" })
+    fetch("/api/products", { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -23,7 +23,8 @@ export function FeaturedProductsSection() {
             setProducts(featured.slice(0, 8));
           } else {
             // Include recent products to make a showcase of 4-8
-            const combined = [...featured, ...data.filter((p: any) => !p.isFeatured && p.isActive)];
+            const nonFeatured = data.filter((p: any) => !p.isFeatured && p.isActive);
+            const combined = [...featured, ...nonFeatured];
             setProducts(combined.slice(0, 8));
           }
         }

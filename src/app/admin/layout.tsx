@@ -17,6 +17,7 @@ import {
   X,
   ChefHat,
   ChevronRight,
+  FolderTree,
 } from "lucide-react";
 import { getAdminToken, removeAdminToken, fetchFromBackend } from "@/lib/api";
 
@@ -24,6 +25,7 @@ const SIDEBAR_ITEMS = [
   { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
   { name: "Orders", href: "/admin/orders", icon: ShoppingBag },
   { name: "Customers", href: "/admin/customers", icon: Users },
+  { name: "Categories", href: "/admin/categories", icon: FolderTree },
   { name: "Products", href: "/admin/products", icon: Package },
   { name: "Add Product", href: "/admin/products/add", icon: PlusCircle },
   { name: "Admin Profile", href: "/admin/profile", icon: UserCheck },

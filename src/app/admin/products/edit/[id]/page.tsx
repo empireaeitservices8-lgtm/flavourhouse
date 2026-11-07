@@ -45,13 +45,21 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   useEffect(() => {
     Promise.all([
       fetchFromBackend("/api/categories"),
-      fetchFromBackend(`/api/products/${productId}`),
+      fetchFromBackend(`/api/admin/products/${productId}`),
     ]).then(([catRes, prodRes]) => {
-      if (catRes.ok && Array.isArray(catRes.data)) {
+      if (catRes.ok && Array.isArray(catRes.data) && catRes.data.length > 0) {
         setCategories(catRes.data);
+      } else {
+        fetch("/api/categories")
+          .then((r) => r.json())
+          .then((data) => {
+            if (Array.isArray(data)) setCategories(data);
+          })
+          .catch(() => {});
       }
-      if (prodRes.ok && prodRes.data) {
-        const p = prodRes.data;
+
+      const p = prodRes.ok ? (prodRes.data?.data || prodRes.data) : null;
+      if (p && p.name) {
         setName(p.name || "");
         setCategory(p.category || "Pasta");
         setPrice(p.price?.toString() || "");
@@ -63,7 +71,26 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
         setIsActive(p.isActive !== false);
         setIsFeatured(Boolean(p.isFeatured));
       } else {
-        setFormError("Could not load product details.");
+        // Fallback to public products endpoint
+        fetch(`/api/products/${productId}`)
+          .then((r) => r.json())
+          .then((pubP) => {
+            if (pubP && pubP.name) {
+              setName(pubP.name || "");
+              setCategory(pubP.category || "Pasta");
+              setPrice(pubP.price?.toString() || "");
+              setDiscountPrice(pubP.discountPrice ? pubP.discountPrice.toString() : "");
+              setStock(pubP.stock !== undefined ? pubP.stock.toString() : "0");
+              setSKU(pubP.SKU || "");
+              setImage(pubP.image || "");
+              setDescription(pubP.description || "");
+              setIsActive(pubP.isActive !== false);
+              setIsFeatured(Boolean(pubP.isFeatured));
+            } else {
+              setFormError("Could not load product details.");
+            }
+          })
+          .catch(() => setFormError("Could not load product details."));
       }
       setIsLoading(false);
     });

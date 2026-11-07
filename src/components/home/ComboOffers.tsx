@@ -13,7 +13,7 @@ export function ComboOffers({ acf }: { acf?: any }) {
   const [addedId, setAddedId] = useState<number | null>(null);
 
   useEffect(() => {
-    fetch("/api/products/", { cache: "no-store" })
+    fetch("/api/products", { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {

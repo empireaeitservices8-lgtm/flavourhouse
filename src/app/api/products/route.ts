@@ -13,7 +13,8 @@ export async function GET(request: Request) {
 
     let sql = `
       SELECT p.id, p.name, p.slug, p.description, p.image, p.price, p.discountPrice,
-             p.stock, p.SKU, p.isActive, p.isFeatured, c.name as category, p.categoryId
+             p.stock, p.SKU, p.isActive, p.isFeatured, c.name as category, p.categoryId,
+             p.createdAt
       FROM products p
       LEFT JOIN categories c ON p.categoryId = c.id
     `;
@@ -25,7 +26,7 @@ export async function GET(request: Request) {
     }
 
     if (category && category !== "All") {
-      conditions.push("(c.name = ? OR c.slug = ?)");
+      conditions.push("(LOWER(c.name) = LOWER(?) OR LOWER(c.slug) = LOWER(?))");
       params.push(category, category.toLowerCase());
     }
 
@@ -33,7 +34,8 @@ export async function GET(request: Request) {
       sql += " WHERE " + conditions.join(" AND ");
     }
 
-    sql += " ORDER BY p.id ASC";
+    // Newest products first!
+    sql += " ORDER BY p.id DESC";
 
     const rows = await query(sql, params);
 
@@ -54,12 +56,21 @@ export async function GET(request: Request) {
         isFeatured: Boolean(p.isFeatured),
         SKU: p.SKU,
       }));
-      return NextResponse.json(formatted);
+
+      return NextResponse.json(formatted, {
+        headers: {
+          "Cache-Control": "no-store, max-age=0, must-revalidate",
+        },
+      });
     }
   } catch (error: any) {
     console.warn("MySQL products fetch failed, using fallback:", error.message);
   }
 
   // Resilient fallback: Always return seed products so website never goes down
-  return NextResponse.json(PRODUCTS);
+  return NextResponse.json(PRODUCTS, {
+    headers: {
+      "Cache-Control": "no-store, max-age=0, must-revalidate",
+    },
+  });
 }
