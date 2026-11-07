@@ -46,7 +46,7 @@ export default async function SingleProductPage({ params }: { params: Promise<{ 
       let relRows: any[] = [];
       if (p.categoryId) {
         relRows = await query(
-          `SELECT id, name, slug, price, discountPrice, image, stock, c.name as category
+          `SELECT p.id, p.name, p.slug, p.price, p.discountPrice, p.image, p.stock, c.name as category
            FROM products p
            LEFT JOIN categories c ON p.categoryId = c.id
            WHERE p.categoryId = ? AND p.id != ? AND p.isActive = 1
