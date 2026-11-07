@@ -298,9 +298,9 @@ export default function CheckoutPage() {
           rzp.open();
           return;
         } else {
-          // If Razorpay keys are not yet configured in environment, let the user know cleanly
           setErrorMessage(
-            "Online payment gateway is awaiting merchant key setup. Please choose Cash on Delivery (COD) to place your order right now."
+            rzpData.error ||
+            "Failed to initiate online payment. Please try again or choose Cash on Delivery (COD)."
           );
           setIsProcessing(false);
           return;
