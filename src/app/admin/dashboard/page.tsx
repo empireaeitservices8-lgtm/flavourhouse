@@ -48,26 +48,16 @@ export default function AdminDashboardPage() {
   const loadDashboardData = async () => {
     setIsLoading(true);
     try {
-      const [statsRes, ordersRes, topRes, stockRes, actRes, salesRes] = await Promise.all([
-        fetchFromBackend("/api/admin/dashboard/stats"),
-        fetchFromBackend("/api/admin/dashboard/recent-orders"),
-        fetchFromBackend("/api/admin/dashboard/top-products"),
-        fetchFromBackend("/api/admin/dashboard/low-stock"),
-        fetchFromBackend("/api/admin/dashboard/recent-activities"),
-        fetchFromBackend("/api/admin/dashboard/sales"),
-      ]);
-
-      if (statsRes.ok && statsRes.data?.stats) setStats(statsRes.data.stats);
-      const orders = ordersRes.data?.orders || ordersRes.data?.recentOrders;
-      if (ordersRes.ok && Array.isArray(orders)) setRecentOrders(orders);
-      const top = topRes.data?.topProducts;
-      if (topRes.ok && Array.isArray(top)) setTopProducts(top);
-      const stock = stockRes.data?.lowStock || stockRes.data?.lowStockProducts;
-      if (stockRes.ok && Array.isArray(stock)) setLowStock(stock);
-      const acts = actRes.data?.activities;
-      if (actRes.ok && Array.isArray(acts)) setActivities(acts);
-      const sales = salesRes.data?.sales || salesRes.data?.dailySales;
-      if (salesRes.ok && Array.isArray(sales)) setDailySales(sales);
+      const res = await fetchFromBackend("/api/admin/dashboard");
+      if (res.ok && res.data) {
+        const d = res.data;
+        if (d.stats) setStats(d.stats);
+        if (Array.isArray(d.orders || d.recentOrders)) setRecentOrders(d.orders || d.recentOrders);
+        if (Array.isArray(d.topProducts)) setTopProducts(d.topProducts);
+        if (Array.isArray(d.lowStock)) setLowStock(d.lowStock);
+        if (Array.isArray(d.activities)) setActivities(d.activities);
+        if (Array.isArray(d.sales)) setDailySales(d.sales);
+      }
     } catch (err) {
       console.error("Dashboard data load error:", err);
     } finally {

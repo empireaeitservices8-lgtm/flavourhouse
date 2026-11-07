@@ -19,7 +19,8 @@ export const pool =
     keepAliveInitialDelay: 0,
   });
 
-if (process.env.NODE_ENV !== "production") globalForDb.mysqlPool = pool;
+// Cache MySQL pool globally so warm serverless instances reuse established connections
+globalForDb.mysqlPool = pool;
 
 export async function query<T = any>(sql: string, params?: any[]): Promise<T> {
   const [rows] = await pool.query(sql, params);

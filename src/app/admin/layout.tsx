@@ -58,7 +58,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       return;
     }
 
-    let isMounted = true;
     const token = getAdminToken();
 
     if (!token) {
@@ -67,9 +66,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       return;
     }
 
+    // Already verified session in memory: never block navigation between admin tabs
+    if (adminUser) {
+      setIsLoading(false);
+      return;
+    }
+
+    let isMounted = true;
     setIsLoading(true);
 
-    // Verify token with backend
+    // Initial session verification
     fetchFromBackend("/api/admin/auth/me")
       .then((res) => {
         if (!isMounted) return;
@@ -92,7 +98,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return () => {
       isMounted = false;
     };
-  }, [pathname, isLoginPage, router]);
+  }, [isLoginPage, router]);
 
   const handleLogout = () => {
     removeAdminToken();

@@ -1,9 +1,10 @@
-// API client for connecting frontend to the Express backend
-
+// API client for connecting frontend to native Next.js API routes
 export const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL ||
-  process.env.NEXT_PUBLIC_API_URL ||
-  "";
+  typeof window !== "undefined"
+    ? "" // In browser, always make relative requests to same-origin Next.js routes
+    : (process.env.NEXT_PUBLIC_BACKEND_URL && !process.env.NEXT_PUBLIC_BACKEND_URL.includes("localhost")
+        ? process.env.NEXT_PUBLIC_BACKEND_URL
+        : "");
 
 export function getAdminToken(): string | null {
   if (typeof window === "undefined") return null;
