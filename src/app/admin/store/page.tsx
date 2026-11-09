@@ -293,7 +293,7 @@ export default function AdminStoreSettingsPage() {
               <span>Shipping & Checkout Policies</span>
             </h2>
             <div className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
-              Tiered Delivery: ₹70 (≤₹500) • ₹100 (₹501–₹1000) • FREE (&gt;₹1000)
+              Delivery Policy: ₹50 (Up to ₹500) • FREE (Above ₹500)
             </div>
           </div>
 

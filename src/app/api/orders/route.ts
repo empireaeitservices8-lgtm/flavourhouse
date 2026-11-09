@@ -19,9 +19,8 @@ function normalizePhone(phone: any): string {
 
 function calculateTieredDeliveryCharge(subtotal: number): number {
   if (!subtotal || subtotal <= 0) return 0;
-  if (subtotal <= 500) return 70;
-  if (subtotal <= 1000) return 100;
-  return 0;
+  if (subtotal <= 500) return 50;
+  return 0; // Above 500 is FREE delivery
 }
 
 function generateOrderNumber(): string {

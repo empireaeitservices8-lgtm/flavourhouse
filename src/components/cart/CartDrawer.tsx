@@ -10,9 +10,9 @@ export function CartDrawer() {
   const { cart, isCartOpen, closeCart, updateQuantity, removeFromCart, subtotal, totalItems } = useCart();
   const router = useRouter();
 
-  const deliveryCharge = !subtotal || subtotal <= 0 ? 0 : subtotal <= 500 ? 70 : subtotal <= 1000 ? 100 : 0;
+  const deliveryCharge = !subtotal || subtotal <= 0 ? 0 : subtotal <= 500 ? 50 : 0;
   const finalTotal = subtotal + deliveryCharge;
-  const amountForFreeDelivery = subtotal > 0 && subtotal <= 1000 ? 1001 - subtotal : 0;
+  const amountForFreeDelivery = subtotal > 0 && subtotal <= 500 ? 501 - subtotal : 0;
 
   const handleCheckout = () => {
     closeCart();

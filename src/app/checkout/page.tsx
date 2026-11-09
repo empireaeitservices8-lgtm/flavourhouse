@@ -163,14 +163,13 @@ export default function CheckoutPage() {
 
   const calculateDeliveryCharge = (amount: number) => {
     if (!amount || amount <= 0) return 0;
-    if (amount <= 500) return 70;
-    if (amount <= 1000) return 100;
-    return 0;
+    if (amount <= 500) return 50;
+    return 0; // Above 500 is FREE delivery
   };
 
   const shippingFee = calculateDeliveryCharge(subtotal);
   const finalTotal = subtotal + shippingFee;
-  const amountForFreeDelivery = subtotal > 0 && subtotal <= 1000 ? 1001 - subtotal : 0;
+  const amountForFreeDelivery = subtotal > 0 && subtotal <= 500 ? 501 - subtotal : 0;
 
   const loadRazorpayScript = () => {
     return new Promise<boolean>((resolve) => {
