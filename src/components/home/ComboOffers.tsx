@@ -137,7 +137,7 @@ export function ComboOffers({ acf }: { acf?: any }) {
                   <img
                     src={product.image || "/images/breakfast_bundle.png"}
                     alt={product.name}
-                    className="w-full h-full object-contain p-2 transition-transform duration-500 group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   <div className="absolute top-3 left-3 bg-brand-primary text-white text-[10px] font-button font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow">
                     {product.category || "Featured"}
