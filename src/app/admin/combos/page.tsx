@@ -85,8 +85,8 @@ export default function AdminCombosPage() {
     setOriginalPrice("");
     setOfferPrice("");
     setSavings("");
-    setTag("SPECIAL OFFER");
-    setImage("https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1080&auto=format&fit=crop");
+    setTag("");
+    setImage("");
     setItemsText("");
     setIsActive(true);
     setIsModalOpen(true);

@@ -53,11 +53,11 @@ export default function AdminRecipesPage() {
 
   // Form Fields
   const [title, setTitle] = useState("");
-  const [category, setCategory] = useState("Pasta");
-  const [prepTime, setPrepTime] = useState("15 mins");
-  const [cookTime, setCookTime] = useState("12 mins");
-  const [difficulty, setDifficulty] = useState("Easy");
-  const [servings, setServings] = useState("2-3");
+  const [category, setCategory] = useState("");
+  const [prepTime, setPrepTime] = useState("");
+  const [cookTime, setCookTime] = useState("");
+  const [difficulty, setDifficulty] = useState("");
+  const [servings, setServings] = useState("");
   const [image, setImage] = useState("");
   const [description, setDescription] = useState("");
   const [ingredientsText, setIngredientsText] = useState("");
@@ -86,12 +86,12 @@ export default function AdminRecipesPage() {
   const openCreateModal = () => {
     setEditingRecipe(null);
     setTitle("");
-    setCategory("Pasta");
-    setPrepTime("15 mins");
-    setCookTime("12 mins");
-    setDifficulty("Easy");
-    setServings("2-3");
-    setImage("/images/pasta.png");
+    setCategory("");
+    setPrepTime("");
+    setCookTime("");
+    setDifficulty("");
+    setServings("");
+    setImage("");
     setDescription("");
     setIngredientsText("");
     setInstructionsText("");
@@ -102,11 +102,11 @@ export default function AdminRecipesPage() {
   const openEditModal = (r: Recipe) => {
     setEditingRecipe(r);
     setTitle(r.title);
-    setCategory(r.category || "Pasta");
-    setPrepTime(r.prepTime || "15 mins");
-    setCookTime(r.cookTime || "12 mins");
-    setDifficulty(r.difficulty || "Easy");
-    setServings(r.servings || "2-3");
+    setCategory(r.category || "");
+    setPrepTime(r.prepTime || "");
+    setCookTime(r.cookTime || "");
+    setDifficulty(r.difficulty || "");
+    setServings(r.servings || "");
     setImage(r.image || "");
     setDescription(r.description || "");
     setIngredientsText(Array.isArray(r.ingredients) ? r.ingredients.join("\n") : "");
@@ -503,6 +503,7 @@ export default function AdminRecipesPage() {
                     onChange={(e) => setCategory(e.target.value)}
                     className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:border-amber-500 cursor-pointer"
                   >
+                    <option value="">Select Category</option>
                     {CATEGORIES.map((c) => (
                       <option key={c} value={c}>
                         {c}
@@ -520,6 +521,7 @@ export default function AdminRecipesPage() {
                     onChange={(e) => setDifficulty(e.target.value)}
                     className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:border-amber-500 cursor-pointer"
                   >
+                    <option value="">Select Difficulty</option>
                     {DIFFICULTIES.map((d) => (
                       <option key={d} value={d}>
                         {d}
@@ -582,7 +584,7 @@ export default function AdminRecipesPage() {
                     required
                     value={image}
                     onChange={(e) => setImage(e.target.value)}
-                    placeholder="/images/pasta.png or https://..."
+                    placeholder="Upload image or enter image URL (https://...)"
                     className="flex-1 px-4 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs text-stone-900 focus:outline-none focus:border-amber-500"
                   />
                   <label className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-medium cursor-pointer transition shrink-0">
