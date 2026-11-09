@@ -85,7 +85,7 @@ export function addStoredProduct(productData: {
     name: productData.name.trim(),
     category: productData.category.trim() || "Pasta",
     price: Number(productData.price) || 0,
-    image: productData.image.trim() || "https://images.unsplash.com/photo-1598720290281-9f26ae6d6f81",
+    image: productData.image.trim() || "/images/pasta.png",
     description: productData.description?.trim() || "",
     inStock: productData.inStock !== false,
     createdAt: new Date().toISOString(),

@@ -294,7 +294,7 @@ export default function AdminHomepageSettingsPage() {
                     type="text"
                     value={heroImage}
                     onChange={(e) => setHeroImage(e.target.value)}
-                    placeholder="https://images.unsplash.com/... or upload image"
+                    placeholder="Upload image or enter image URL (https://...)"
                     className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs text-stone-900 focus:outline-none focus:border-amber-500"
                   />
 

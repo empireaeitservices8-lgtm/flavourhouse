@@ -27,9 +27,9 @@ export function WhyMillets({ acf }: { acf?: any }) {
           >
             <div className="aspect-[4/5] rounded-t-full rounded-b-[4rem] overflow-hidden bg-brand-cream relative z-10 border-8 border-white shadow-2xl">
               <img 
-                src={acf?.why_millets_image || "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?q=80&w=1080&auto=format&fit=crop"} 
+                src={acf?.why_millets_image || "/images/noodles.png"} 
                 alt="Wholesome ingredients in a wooden bowl" 
-                className="w-full h-full object-cover"
+                className={`w-full h-full ${acf?.why_millets_image ? 'object-cover' : 'object-contain p-6 bg-brand-cream'}`}
               />
             </div>
             

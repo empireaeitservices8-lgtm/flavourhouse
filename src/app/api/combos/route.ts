@@ -31,7 +31,7 @@ export async function GET() {
         offerPrice: Number(c.offerPrice) || 0,
         savings: c.savings || "",
         tag: c.tag || "SPECIAL OFFER",
-        image: c.image || "https://images.unsplash.com/photo-1542838132-92c53300491e",
+        image: c.image || "/images/breakfast_bundle.png",
         items: itemsList,
         isActive: Boolean(c.isActive),
       };

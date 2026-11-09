@@ -53,11 +53,10 @@ export function HeroSection({ acf }: { acf?: any }) {
             transition={{ duration: 1, delay: 0.2 }}
             className="absolute inset-0 rounded-[2rem] overflow-hidden shadow-2xl"
           >
-            {/* Using a high-quality unsplash image matching the description since image generation quota is exhausted */}
             <img 
-              src={acf?.hero_image || "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=2070&auto=format&fit=crop"} 
-              alt="Premium organic healthy food bowl with natural ingredients" 
-              className="w-full h-full object-cover"
+              src={acf?.hero_image || "/images/pasta.png"} 
+              alt="Flavor House Organic Food" 
+              className={`w-full h-full ${acf?.hero_image ? 'object-cover' : 'object-contain p-8 bg-brand-cream/80'}`}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-brand-dark/40 to-transparent"></div>
           </motion.div>

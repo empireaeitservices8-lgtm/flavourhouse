@@ -48,7 +48,7 @@ export async function GET(request: Request) {
         categoryId: p.categoryId,
         price: Number(p.price),
         discountPrice: p.discountPrice ? Number(p.discountPrice) : null,
-        image: p.image || "https://images.unsplash.com/photo-1598720290281-9f26ae6d6f81",
+        image: p.image || "/images/pasta.png",
         description: p.description,
         stock: p.stock ?? 100,
         inStock: (p.stock ?? 100) > 0,

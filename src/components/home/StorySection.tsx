@@ -20,7 +20,7 @@ export function StorySection({ acf }: { acf?: any }) {
             className="relative h-[600px] rounded-[2rem] overflow-hidden shadow-2xl"
           >
             <img 
-              src={acf?.story_image || "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?q=80&w=1080&auto=format&fit=crop"} 
+              src={acf?.story_image || "/images/pasta1.jpg"} 
               alt="Authentic Kerala spices and ingredients" 
               className="w-full h-full object-cover"
             />

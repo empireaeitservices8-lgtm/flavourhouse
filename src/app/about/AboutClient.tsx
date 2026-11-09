@@ -18,7 +18,7 @@ export function AboutClient({ acf }: AboutClientProps) {
     typeof acf?.main_content_image === "string" && acf.main_content_image
       ? acf.main_content_image
       : acf?.main_content_image?.url ||
-        "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1974&auto=format&fit=crop";
+        "/images/pasta.png";
 
   const promiseBadge = acf?.main_promise_badge || "Our Core Promise";
   const titlePart1 = acf?.main_title_part_1 || "Delivering Quality Items";

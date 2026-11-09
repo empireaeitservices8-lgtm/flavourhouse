@@ -109,7 +109,7 @@ export async function POST(request: Request) {
         name.trim(),
         slug,
         description || "",
-        image || "https://images.unsplash.com/photo-1598720290281-9f26ae6d6f81",
+        image || "/images/pasta.png",
         categoryId,
         cleanPrice,
         discountPrice ? Number(discountPrice) : null,

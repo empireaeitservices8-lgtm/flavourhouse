@@ -16,7 +16,7 @@ const DEFAULT_COMBOS: ComboItem[] = [
     offerPrice: 1120,
     savings: "20% OFF",
     tag: "POPULAR",
-    image: "https://images.unsplash.com/photo-1543339308-43e59d6b73a6?q=80&w=1080&auto=format&fit=crop",
+    image: "/images/pasta.png",
     items: [
       "Moringa Pasta Penne",
       "Beetroot Pasta Penne",
@@ -53,7 +53,7 @@ const DEFAULT_COMBOS: ComboItem[] = [
     offerPrice: 1020,
     savings: "15% OFF",
     tag: "NEW",
-    image: "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?q=80&w=1080&auto=format&fit=crop",
+    image: "/images/cookies.png",
     items: [
       "Choco Oats Cookies",
       "Vanilla Oats Cookies",
@@ -72,7 +72,7 @@ const DEFAULT_COMBOS: ComboItem[] = [
     offerPrice: 1650,
     savings: "25% OFF",
     tag: "SUPER VALUE",
-    image: "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1080&auto=format&fit=crop",
+    image: "/images/noodles.png",
     items: [
       "3x Pasta Packs",
       "3x Noodles Packs",
@@ -148,7 +148,7 @@ export default async function ComboOffersPage() {
           offerPrice: offer,
           savings: c.savings || (orig > offer ? `${Math.round(((orig - offer) / orig) * 100)}% OFF` : ""),
           tag: c.tag || "SPECIAL OFFER",
-          image: c.image || "https://images.unsplash.com/photo-1542838132-92c53300491e",
+          image: c.image || "/images/breakfast_bundle.png",
           items: itemsList.length > 0 ? itemsList : [c.name, "100% Organic", "Farm Fresh"],
         });
       });

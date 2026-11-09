@@ -39,7 +39,7 @@ const RECIPES = [
     cookTime: "15 mins",
     difficulty: "Easy",
     servings: "2",
-    image: "https://images.unsplash.com/photo-1598720290281-9f26ae6d6f81?q=80&w=1080&auto=format&fit=crop",
+    image: "/images/pasta1.jpg",
     description: "A naturally colorful and sweet beetroot pasta dish loaded with sautéed bell peppers, spinach, and goat cheese.",
     ingredients: [
       "200g Beetroot Pasta Penne",

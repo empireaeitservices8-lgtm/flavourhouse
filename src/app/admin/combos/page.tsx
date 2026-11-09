@@ -331,7 +331,7 @@ export default function AdminCombosPage() {
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       (e.target as HTMLImageElement).src =
-                        "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1080&auto=format&fit=crop";
+                        "/images/breakfast_bundle.png";
                     }}
                   />
                   <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">

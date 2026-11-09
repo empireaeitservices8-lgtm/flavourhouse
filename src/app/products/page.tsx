@@ -159,9 +159,9 @@ function ProductsPageInner() {
         className="block relative aspect-[4/5] bg-brand-sand rounded-3xl overflow-hidden mb-5 border border-brand-border/60 shadow-xs"
       >
         <img
-          src={product.image || "https://images.unsplash.com/photo-1598720290281-9f26ae6d6f81"}
+          src={product.image || "/images/pasta.png"}
           alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          className="w-full h-full object-contain p-4 transition-transform duration-700 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-brand-dark/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
           <button
