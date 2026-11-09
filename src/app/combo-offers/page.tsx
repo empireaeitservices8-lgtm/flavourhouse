@@ -1,5 +1,6 @@
 import { getComboOffersPageData } from "@/lib/wp";
 import { ComboOffersClient, ComboItem } from "./ComboOffersClient";
+import { query } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -118,72 +119,46 @@ export default async function ComboOffersPage() {
       "Bundle and save with our curated packages. Enjoy premium organic food products delivered right to your door.",
   };
 
-  // 1. Fetch dynamic combo products added in admin panel from database
+  // 1. Fetch dynamic combos from combo_offers table in database
   const dynamicDbCombos: ComboItem[] = [];
   try {
-    const res = await fetch(`${BACKEND_URL}/api/products`, {
-      cache: "no-store",
-      signal: AbortSignal.timeout(3000),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data)) {
-        const dbCombos = data.filter((p: any) => {
-          const cat = (p.category || "").toLowerCase();
-          const name = (p.name || "").toLowerCase();
-          return cat.includes("combo") || cat.includes("bundle") || name.includes("bundle") || name.includes("combo pack");
+    const rows = await query<any[]>("SELECT * FROM combo_offers WHERE isActive = 1 ORDER BY id DESC");
+    if (rows && rows.length > 0) {
+      rows.forEach((c) => {
+        let itemsList: string[] = [];
+        if (Array.isArray(c.items)) {
+          itemsList = c.items;
+        } else if (typeof c.items === "string") {
+          try {
+            itemsList = JSON.parse(c.items);
+          } catch {
+            itemsList = c.items.split(/\r?\n/).map((s: string) => s.trim()).filter(Boolean);
+          }
+        }
+
+        const orig = Number(c.originalPrice) || 0;
+        const offer = Number(c.offerPrice) || orig || 0;
+
+        dynamicDbCombos.push({
+          id: `combo-db-${c.id}`,
+          name: c.name,
+          subtitle: c.subtitle || "Special Offer Bundle",
+          description: c.description || "",
+          originalPrice: orig,
+          offerPrice: offer,
+          savings: c.savings || (orig > offer ? `${Math.round(((orig - offer) / orig) * 100)}% OFF` : ""),
+          tag: c.tag || "SPECIAL OFFER",
+          image: c.image || "https://images.unsplash.com/photo-1542838132-92c53300491e",
+          items: itemsList.length > 0 ? itemsList : [c.name, "100% Organic", "Farm Fresh"],
         });
-
-        dbCombos.forEach((p: any) => {
-          const orig = p.discountPrice ? p.price : Math.round(p.price * 1.25);
-          const offer = p.discountPrice ? p.discountPrice : p.price;
-          const pct = Math.round(((orig - offer) / orig) * 100);
-          dynamicDbCombos.push({
-            id: `prod-${p.id}`,
-            name: p.name,
-            subtitle: p.category || "Special Offer Bundle",
-            description: p.description || "Freshly packed organic bundle with handpicked nutrition and natural goodness.",
-            originalPrice: orig,
-            offerPrice: offer,
-            savings: pct > 0 ? `${pct}% OFF` : "SPECIAL PRICE",
-            tag: "FRESH ARRIVAL",
-            image: p.image || "https://images.unsplash.com/photo-1542838132-92c53300491e",
-            items: [p.name, "100% Organic Ingredients", "Farm Fresh Assured"],
-          });
-        });
-      }
-    }
-  } catch (err) {
-    console.warn("Could not fetch DB combos:", err);
-  }
-
-  const parsedCombos: ComboItem[] = [];
-
-  // Check up to 8 potential combo slots in ACF
-  for (let i = 1; i <= 8; i++) {
-    const title = acf?.[`combo_${i}_title`];
-    if (title && typeof title === "string" && title.trim().length > 0) {
-      const origPrice = Number(acf[`combo_${i}_originalPrice`]) || 0;
-      const offPrice = Number(acf[`combo_${i}_offerPrice`]) || origPrice || 0;
-      const fallbackImg = DEFAULT_COMBOS[(i - 1) % DEFAULT_COMBOS.length]?.image || "/images/breakfast_bundle.png";
-
-      parsedCombos.push({
-        id: `combo-acf-${i}-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
-        name: title.trim(),
-        subtitle: acf[`combo_${i}_subtitle`] || "Special Combo Pack",
-        description: acf[`combo_${i}_description`] || "",
-        originalPrice: origPrice,
-        offerPrice: offPrice,
-        savings: formatSavings(acf[`combo_${i}_savings`]),
-        tag: acf[`combo_${i}_tag`] || "SPECIAL OFFER",
-        image: parseImage(acf[`combo_${i}_image`], fallbackImg),
-        items: parseItems(acf[`combo_${i}_items`]),
       });
     }
+  } catch (err) {
+    console.warn("Could not fetch DB combo_offers:", err);
   }
 
-  const baseCombos = parsedCombos.length > 0 ? parsedCombos : DEFAULT_COMBOS;
-  const combosToDisplay = [...dynamicDbCombos, ...baseCombos];
+  // 2. Fallback to DEFAULT_COMBOS only if no combos in database
+  const combosToDisplay = dynamicDbCombos.length > 0 ? dynamicDbCombos : DEFAULT_COMBOS;
 
   return <ComboOffersClient hero={hero} combos={combosToDisplay} />;
 }

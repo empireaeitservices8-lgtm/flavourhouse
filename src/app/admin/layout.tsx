@@ -18,6 +18,9 @@ import {
   ChefHat,
   ChevronRight,
   FolderTree,
+  Sparkles,
+  BookOpen,
+  Image as ImageIcon,
 } from "lucide-react";
 import { getAdminToken, removeAdminToken, fetchFromBackend } from "@/lib/api";
 
@@ -28,6 +31,9 @@ const SIDEBAR_ITEMS = [
   { name: "Categories", href: "/admin/categories", icon: FolderTree },
   { name: "Products", href: "/admin/products", icon: Package },
   { name: "Add Product", href: "/admin/products/add", icon: PlusCircle },
+  { name: "Combo Offers", href: "/admin/combos", icon: Sparkles },
+  { name: "Recipes", href: "/admin/recipes", icon: BookOpen },
+  { name: "Home & Banners", href: "/admin/homepage", icon: ImageIcon },
   { name: "Admin Profile", href: "/admin/profile", icon: UserCheck },
   { name: "Store Settings", href: "/admin/store", icon: Store },
 ];

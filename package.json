@@ -23,6 +23,7 @@
     "lucide-react": "^1.24.0",
     "mysql2": "^3.24.6",
     "next": "16.2.10",
+    "nodemailer": "^10.4.0",
     "razorpay": "^2.9.8",
     "react": "19.2.4",
     "react-dom": "19.2.4",
@@ -37,6 +38,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/nodemailer": "^8.0.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",

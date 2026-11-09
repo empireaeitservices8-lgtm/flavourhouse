@@ -13,32 +13,54 @@ export function ComboOffers({ acf }: { acf?: any }) {
   const [addedId, setAddedId] = useState<number | null>(null);
 
   useEffect(() => {
-    fetch("/api/products", { cache: "no-store" })
+    // 1. First attempt to fetch dedicated combo offers
+    fetch("/api/combos", { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => {
-        if (Array.isArray(data)) {
-          let combos = data.filter((p: any) => {
-            const cat = (p.category || "").toLowerCase();
-            const name = (p.name || "").toLowerCase();
-            return (
-              cat.includes("combo") ||
-              cat.includes("bundle") ||
-              name.includes("bundle") ||
-              name.includes("pack") ||
-              name.includes("delight") ||
-              p.isFeatured
-            );
-          });
-
-          if (combos.length === 0) {
-            combos = data.slice(0, 3);
-          } else {
-            combos = combos.slice(0, 3);
-          }
-
-          setProducts(combos);
+        if (data && Array.isArray(data.combos) && data.combos.length > 0) {
+          const formatted = data.combos.slice(0, 3).map((c: any) => ({
+            id: c.dbId || c.id,
+            name: c.name,
+            category: c.subtitle || "Combo Offer",
+            price: c.offerPrice,
+            originalPrice: c.originalPrice > c.offerPrice ? c.originalPrice : null,
+            image: c.image,
+            tag: c.tag,
+            savings: c.savings,
+          }));
+          setProducts(formatted);
+          setLoading(false);
+          return;
         }
-        setLoading(false);
+
+        // 2. Fallback to products if no dedicated combos
+        return fetch("/api/products", { cache: "no-store" })
+          .then((res) => res.json())
+          .then((pData) => {
+            if (Array.isArray(pData)) {
+              let combos = pData.filter((p: any) => {
+                const cat = (p.category || "").toLowerCase();
+                const name = (p.name || "").toLowerCase();
+                return (
+                  cat.includes("combo") ||
+                  cat.includes("bundle") ||
+                  name.includes("bundle") ||
+                  name.includes("pack") ||
+                  name.includes("delight") ||
+                  p.isFeatured
+                );
+              });
+
+              if (combos.length === 0) {
+                combos = pData.slice(0, 3);
+              } else {
+                combos = combos.slice(0, 3);
+              }
+
+              setProducts(combos);
+            }
+            setLoading(false);
+          });
       })
       .catch((err) => {
         console.error("Failed to fetch combos:", err);

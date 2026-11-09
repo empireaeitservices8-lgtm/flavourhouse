@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { query, pool } from "@/lib/db";
 import { getBearerToken, verifyToken } from "@/lib/auth";
+import { sendOrderNotificationEmail } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 
@@ -290,6 +291,33 @@ export async function POST(request: Request) {
       }
 
       await conn.commit();
+
+      // Dispatch order notification email asynchronously (won't block response or fail order if SMTP fails)
+      sendOrderNotificationEmail({
+        orderId,
+        orderNumber,
+        customer: {
+          fullName: customer.fullName.trim(),
+          email: customer.email.trim(),
+          phone: normPhone,
+          alternatePhone: customer.alternatePhone?.trim(),
+        },
+        deliveryAddress: {
+          houseName: deliveryAddress.houseName.trim(),
+          street: deliveryAddress.street.trim(),
+          city: deliveryAddress.city.trim(),
+          state: deliveryAddress.state.trim(),
+          pincode: deliveryAddress.pincode.trim(),
+        },
+        items: validatedItems,
+        subtotal: calculatedSubtotal,
+        deliveryCharge: deliveryFee,
+        totalAmount: finalTotal,
+        paymentMethod: actualPaymentMethod,
+        paymentStatus: actualPaymentStatus,
+      }).catch((emailErr) => {
+        console.error("Order notification email dispatch caught error:", emailErr);
+      });
 
       return NextResponse.json({
         success: true,

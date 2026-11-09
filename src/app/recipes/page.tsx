@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Clock, ChefHat, Flame, BookOpen, X, Utensils } from "lucide-react";
 
@@ -128,12 +128,26 @@ const RECIPES = [
 ];
 
 export default function RecipesPage() {
+  const [recipesList, setRecipesList] = useState<typeof RECIPES>(RECIPES);
   const [activeCategory, setActiveCategory] = useState("All");
-  const [selectedRecipe, setSelectedRecipe] = useState<typeof RECIPES[0] | null>(null);
+  const [selectedRecipe, setSelectedRecipe] = useState<any | null>(null);
 
-  const categories = ["All", "Pasta", "Noodles", "Vermicelli", "Cookies"];
+  useEffect(() => {
+    fetch("/api/recipes", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && Array.isArray(data.recipes) && data.recipes.length > 0) {
+          setRecipesList(data.recipes);
+        }
+      })
+      .catch((err) => console.warn("Could not fetch DB recipes, using defaults:", err));
+  }, []);
 
-  const filteredRecipes = RECIPES.filter(
+  const baseCategories = ["All", "Pasta", "Noodles", "Vermicelli", "Cookies"];
+  const dynamicCategories = Array.from(new Set(recipesList.map((r) => r.category).filter(Boolean)));
+  const categories = ["All", ...Array.from(new Set([...baseCategories.slice(1), ...dynamicCategories]))];
+
+  const filteredRecipes = recipesList.filter(
     (r) => activeCategory === "All" || r.category === activeCategory
   );
 
@@ -275,7 +289,7 @@ export default function RecipesPage() {
               <div className="mb-6">
                 <h4 className="font-heading text-xl font-bold text-brand-dark mb-3">Ingredients</h4>
                 <ul className="space-y-2 font-sans text-sm text-brand-text">
-                  {selectedRecipe.ingredients.map((ing, i) => (
+                  {selectedRecipe.ingredients?.map((ing: string, i: number) => (
                     <li key={i} className="flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-brand-primary shrink-0"></span>
                       <span>{ing}</span>
@@ -288,7 +302,7 @@ export default function RecipesPage() {
               <div>
                 <h4 className="font-heading text-xl font-bold text-brand-dark mb-3">Instructions</h4>
                 <ol className="space-y-3 font-sans text-sm text-brand-text">
-                  {selectedRecipe.instructions.map((step, i) => (
+                  {selectedRecipe.instructions?.map((step: string, i: number) => (
                     <li key={i} className="flex gap-3">
                       <span className="font-button font-bold text-brand-primary text-sm shrink-0">{i + 1}.</span>
                       <span>{step}</span>
