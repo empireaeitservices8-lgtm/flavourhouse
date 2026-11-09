@@ -20,7 +20,6 @@ export default function AddProductPage() {
   // Form Fields
   const [name, setName] = useState("");
   const [category, setCategory] = useState("Pasta");
-  const [newCategoryName, setNewCategoryName] = useState("");
   const [price, setPrice] = useState("");
   const [discountPrice, setDiscountPrice] = useState("");
   const [stock, setStock] = useState("50");
@@ -102,9 +101,9 @@ export default function AddProductPage() {
       return;
     }
 
-    const finalCategory = category === "__new__" ? newCategoryName.trim() : category;
+    const finalCategory = category.trim();
     if (!finalCategory) {
-      setFormError("Please select or specify a product category.");
+      setFormError("Please select a product category.");
       return;
     }
 
@@ -186,40 +185,20 @@ export default function AddProductPage() {
 
           {/* Category */}
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="block text-xs font-button font-semibold uppercase text-[#A17D49] tracking-wider">
-                Category *
-              </label>
-              <Link
-                href="/admin/categories"
-                target="_blank"
-                className="text-[11px] font-button text-[#B8945F] hover:underline"
-              >
-                + Manage Categories
-              </Link>
-            </div>
+            <label className="block text-xs font-button font-semibold uppercase text-[#A17D49] tracking-wider mb-2">
+              Category *
+            </label>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full px-4 py-2.5 bg-[#FAF7F2] border border-[#E9DDC5] rounded-xl text-[#3F3424] text-sm font-sans focus:outline-none focus:border-[#B8945F] focus:bg-white transition"
+              className="w-full px-4 py-2.5 bg-[#FAF7F2] border border-[#E9DDC5] rounded-xl text-[#3F3424] text-sm font-sans focus:outline-none focus:border-[#B8945F] focus:bg-white transition cursor-pointer"
             >
               {categories.map((c) => (
                 <option key={c.id || c.name} value={c.name}>
                   {c.name}
                 </option>
               ))}
-              <option value="__new__">+ Create New Category</option>
             </select>
-
-            {category === "__new__" && (
-              <input
-                type="text"
-                placeholder="Enter new category name..."
-                value={newCategoryName}
-                onChange={(e) => setNewCategoryName(e.target.value)}
-                className="w-full mt-2 px-4 py-2 bg-[#FAF7F2] border border-[#E9DDC5] rounded-xl text-[#3F3424] text-xs focus:outline-none focus:border-[#B8945F]"
-              />
-            )}
           </div>
 
           {/* SKU */}
