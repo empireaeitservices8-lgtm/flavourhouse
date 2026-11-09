@@ -372,57 +372,7 @@ export default function AdminHomepageSettingsPage() {
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold uppercase text-stone-600 tracking-wider mb-1.5">
-                  Button 1 Text
-                </label>
-                <input
-                  type="text"
-                  value={heroButton1Text}
-                  onChange={(e) => setHeroButton1Text(e.target.value)}
-                  placeholder="Shop Products"
-                  className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:border-amber-500"
-                />
-              </div>
 
-              <div>
-                <label className="block text-xs font-semibold uppercase text-stone-600 tracking-wider mb-1.5">
-                  Button 1 Link
-                </label>
-                <input
-                  type="text"
-                  value={heroButton1Link}
-                  onChange={(e) => setHeroButton1Link(e.target.value)}
-                  placeholder="/products"
-                  className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:border-amber-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold uppercase text-stone-600 tracking-wider mb-1.5">
-                  Floating Badge Title
-                </label>
-                <input
-                  type="text"
-                  value={heroFloatingTitle}
-                  onChange={(e) => setHeroFloatingTitle(e.target.value)}
-                  placeholder="100% Natural"
-                  className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:border-amber-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold uppercase text-stone-600 tracking-wider mb-1.5">
-                  Floating Badge Subtitle
-                </label>
-                <input
-                  type="text"
-                  value={heroFloatingSubtitle}
-                  onChange={(e) => setHeroFloatingSubtitle(e.target.value)}
-                  placeholder="Pure Nutrition"
-                  className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:border-amber-500"
-                />
-              </div>
             </div>
           </div>
         )}
@@ -713,3 +663,4 @@ export default function AdminHomepageSettingsPage() {
     </div>
   );
 }
+

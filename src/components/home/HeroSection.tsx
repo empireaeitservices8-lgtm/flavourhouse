@@ -34,8 +34,8 @@ export function HeroSection({ acf }: { acf?: any }) {
             </p>
             
             <div className="flex flex-wrap items-center gap-4">
-              <Link href={acf?.hero_button_1_link || "/products"} className="group flex items-center gap-2 bg-brand-primary text-white px-8 py-4 rounded-full font-button text-sm uppercase tracking-wide hover:bg-brand-dark transition-all duration-300 shadow-[0_10px_30px_rgba(184,148,95,0.3)] hover:shadow-[0_15px_35px_rgba(110,84,50,0.4)]">
-                {acf?.hero_button_1_text || "Shop Products"}
+              <Link href="/products" className="group flex items-center gap-2 bg-brand-primary text-white px-8 py-4 rounded-full font-button text-sm uppercase tracking-wide hover:bg-brand-dark transition-all duration-300 shadow-[0_10px_30px_rgba(184,148,95,0.3)] hover:shadow-[0_15px_35px_rgba(110,84,50,0.4)]">
+                Shop Products
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link href={acf?.hero_button_2_link || "/products"} className="flex items-center gap-2 px-8 py-4 rounded-full font-button text-sm uppercase tracking-wide text-brand-dark border border-brand-border hover:border-brand-primary hover:text-brand-primary transition-colors bg-white/30 backdrop-blur-sm">
@@ -60,23 +60,6 @@ export function HeroSection({ acf }: { acf?: any }) {
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-brand-dark/40 to-transparent"></div>
-          </motion.div>
-
-          {/* Floating Elements */}
-          <motion.div 
-            animate={{ y: [0, -15, 0] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute -bottom-6 -left-4 lg:-bottom-10 lg:-left-10 bg-white p-3 lg:p-4 rounded-2xl shadow-xl border border-brand-border backdrop-blur-md bg-white/90 z-10"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-brand-cream rounded-full flex items-center justify-center">
-                <span className="text-2xl">{acf?.hero_floating_badge_icon || "🌿"}</span>
-              </div>
-              <div>
-                <p className="font-heading font-bold text-brand-dark">{acf?.hero_floating_badge_title || "100% Natural"}</p>
-                <p className="text-xs font-sans text-brand-text">{acf?.hero_floating_badge_subtitle || "Pure Nutrition"}</p>
-              </div>
-            </div>
           </motion.div>
         </div>
       </div>

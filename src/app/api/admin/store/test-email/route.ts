@@ -29,3 +29,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: err.message || "Test email failed" }, { status: 500 });
   }
 }
+
