@@ -28,7 +28,7 @@ export default function CheckoutPage() {
   const { cart, subtotal, totalItems, clearCart } = useCart();
   const { customer, isLoggedIn } = useCustomerAuth();
 
-  const [paymentMethod, setPaymentMethod] = useState("cod");
+  const [paymentMethod, setPaymentMethod] = useState("online");
   const [isOrderPlaced, setIsOrderPlaced] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
@@ -250,70 +250,62 @@ export default function CheckoutPage() {
     setIsProcessing(true);
 
     try {
-      if (paymentMethod === "online") {
-        const scriptLoaded = await loadRazorpayScript();
-        if (!scriptLoaded) {
-          setErrorMessage("Failed to load secure payment gateway. Please check your connection or choose Cash on Delivery.");
-          setIsProcessing(false);
-          return;
-        }
-
-        const rzpRes = await fetch("/api/razorpay", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ amount: finalTotal }),
-        });
-        const rzpData = await rzpRes.json();
-
-        if (rzpRes.ok && rzpData.id && rzpData.key_id) {
-          const rzp = new (window as any).Razorpay({
-            key: rzpData.key_id,
-            amount: rzpData.amount,
-            currency: "INR",
-            name: "Flavour House Foods",
-            description: `Order Payment (${cart.length} items)`,
-            order_id: rzpData.id,
-            prefill: {
-              name: formData.fullName.trim(),
-              email: formData.email.trim(),
-              contact: formData.phone.trim(),
-            },
-            theme: { color: "#8E2B1F" },
-            handler: async function () {
-              try {
-                await sendOrderToBackend("Online", "Paid");
-              } catch (err: any) {
-                setErrorMessage("Payment was successful but failed to register order. Please contact support.");
-              } finally {
-                setIsProcessing(false);
-              }
-            },
-            modal: {
-              ondismiss: function () {
-                setIsProcessing(false);
-              },
-            },
-          });
-          rzp.open();
-          return;
-        } else {
-          setErrorMessage(
-            rzpData.error ||
-            "Failed to initiate online payment. Please try again or choose Cash on Delivery (COD)."
-          );
-          setIsProcessing(false);
-          return;
-        }
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        setErrorMessage("Failed to load secure payment gateway. Please check your connection and try again.");
+        setIsProcessing(false);
+        return;
       }
 
-      // Default: Cash on Delivery
-      await sendOrderToBackend("COD", "Pending");
+      const rzpRes = await fetch("/api/razorpay", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: finalTotal }),
+      });
+      const rzpData = await rzpRes.json();
+
+      if (rzpRes.ok && rzpData.id && rzpData.key_id) {
+        const rzp = new (window as any).Razorpay({
+          key: rzpData.key_id,
+          amount: rzpData.amount,
+          currency: "INR",
+          name: "Flavour House Foods",
+          description: `Order Payment (${cart.length} items)`,
+          order_id: rzpData.id,
+          prefill: {
+            name: formData.fullName.trim(),
+            email: formData.email.trim(),
+            contact: formData.phone.trim(),
+          },
+          theme: { color: "#8E2B1F" },
+          handler: async function () {
+            try {
+              await sendOrderToBackend("Online", "Paid");
+            } catch (err: any) {
+              setErrorMessage("Payment was successful but failed to register order. Please contact support.");
+            } finally {
+              setIsProcessing(false);
+            }
+          },
+          modal: {
+            ondismiss: function () {
+              setIsProcessing(false);
+            },
+          },
+        });
+        rzp.open();
+        return;
+      } else {
+        setErrorMessage(
+          rzpData.error ||
+          "Failed to initiate online payment gateway. Please try again."
+        );
+        setIsProcessing(false);
+        return;
+      }
     } catch (err: any) {
       setErrorMessage("Could not connect to the backend server. Please check your connection.");
-    } finally {
-      if (paymentMethod !== "online") {
-        setIsProcessing(false);
-      }
+      setIsProcessing(false);
     }
   };
 
@@ -362,7 +354,7 @@ export default function CheckoutPage() {
               <div className="flex justify-between border-b border-brand-border/60 pb-2">
                 <span className="text-brand-text/70">Payment Mode:</span>
                 <span className="font-bold text-brand-dark uppercase">
-                  {paymentMethod === "cod" ? "Cash on Delivery" : "Online Payment"}
+                  Online Payment (Prepaid)
                 </span>
               </div>
               <div className="flex justify-between border-b border-brand-border/60 pb-2">
@@ -682,69 +674,63 @@ export default function CheckoutPage() {
 
                 {/* 3. Payment Method */}
                 <div className="bg-white p-8 rounded-3xl shadow-sm border border-brand-border">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-8 h-8 rounded-full bg-brand-primary/10 text-brand-primary flex items-center justify-center font-button font-bold text-sm">
-                      3
+                  <div className="flex items-center justify-between gap-3 mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-brand-primary/10 text-brand-primary flex items-center justify-center font-button font-bold text-sm">
+                        3
+                      </div>
+                      <h2 className="font-heading text-2xl font-bold text-brand-dark">
+                        Payment Method
+                      </h2>
                     </div>
-                    <h2 className="font-heading text-2xl font-bold text-brand-dark">
-                      Payment Method
-                    </h2>
+                    <span className="bg-emerald-50 text-emerald-700 text-xs font-semibold px-3 py-1 rounded-full border border-emerald-200 flex items-center gap-1.5">
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      100% Secure Payment
+                    </span>
                   </div>
 
-                  <div className="space-y-3">
-                    {/* Cash on Delivery */}
-                    <label
-                      onClick={() => setPaymentMethod("cod")}
-                      className={`flex items-center gap-4 p-4 rounded-2xl border cursor-pointer transition ${
-                        paymentMethod === "cod"
-                          ? "border-brand-primary bg-brand-cream/50 shadow-xs"
-                          : "border-brand-border hover:bg-stone-50"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="payment"
-                        value="cod"
-                        checked={paymentMethod === "cod"}
-                        onChange={() => setPaymentMethod("cod")}
-                        className="w-4 h-4 text-brand-primary focus:ring-brand-primary"
-                      />
-                      <Banknote className="w-6 h-6 text-brand-primary shrink-0" />
-                      <div className="flex-1">
-                        <p className="font-heading font-bold text-brand-dark text-base">Cash on Delivery (COD)</p>
-                        <p className="font-sans text-xs text-brand-text/60">Pay safely in cash or UPI when your organic products arrive at your doorstep.</p>
+                  <div className="p-5 rounded-2xl border-2 border-brand-primary bg-brand-cream/40 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-brand-primary text-white flex items-center justify-center shadow-xs">
+                          <CreditCard className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <p className="font-heading font-bold text-brand-dark text-base">
+                            Instant Online Payment
+                          </p>
+                          <p className="font-sans text-xs text-brand-text/70">
+                            Fast, convenient & guaranteed safe checkout
+                          </p>
+                        </div>
                       </div>
-                      <span className="bg-brand-primary/10 text-brand-primary text-[10px] uppercase font-bold tracking-wider px-3 py-1 rounded-full">
-                        Recommended
+                      <span className="bg-brand-primary text-white text-[10px] uppercase font-bold tracking-wider px-3 py-1 rounded-full shadow-xs">
+                        Razorpay Secure
                       </span>
-                    </label>
+                    </div>
 
-                    {/* Online Payment */}
-                    <label
-                      onClick={() => setPaymentMethod("online")}
-                      className={`flex items-center gap-4 p-4 rounded-2xl border cursor-pointer transition ${
-                        paymentMethod === "online"
-                          ? "border-brand-primary bg-brand-cream/50 shadow-xs"
-                          : "border-brand-border hover:bg-stone-50"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="payment"
-                        value="online"
-                        checked={paymentMethod === "online"}
-                        onChange={() => setPaymentMethod("online")}
-                        className="w-4 h-4 text-brand-primary focus:ring-brand-primary"
-                      />
-                      <CreditCard className="w-6 h-6 text-stone-600 shrink-0" />
-                      <div className="flex-1">
-                        <p className="font-heading font-bold text-brand-dark text-base">Online Payment</p>
-                        <p className="font-sans text-xs text-brand-text/60">UPI, NetBanking, Credit/Debit Cards</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-brand-border/60">
+                      <div className="bg-white px-3 py-2 rounded-xl border border-brand-border/60 flex items-center justify-center gap-2 text-xs font-medium text-brand-dark shadow-2xs">
+                        <Smartphone className="w-4 h-4 text-emerald-600" />
+                        <span>UPI / GPay / PhonePe</span>
                       </div>
-                      <span className="bg-stone-100 text-stone-600 text-[10px] uppercase font-bold tracking-wider px-3 py-1 rounded-full">
-                        Secure
-                      </span>
-                    </label>
+                      <div className="bg-white px-3 py-2 rounded-xl border border-brand-border/60 flex items-center justify-center gap-2 text-xs font-medium text-brand-dark shadow-2xs">
+                        <CreditCard className="w-4 h-4 text-brand-primary" />
+                        <span>Credit / Debit Cards</span>
+                      </div>
+                      <div className="bg-white px-3 py-2 rounded-xl border border-brand-border/60 flex items-center justify-center gap-2 text-xs font-medium text-brand-dark shadow-2xs">
+                        <Check className="w-4 h-4 text-blue-600" />
+                        <span>Net Banking</span>
+                      </div>
+                      <div className="bg-white px-3 py-2 rounded-xl border border-brand-border/60 flex items-center justify-center gap-2 text-xs font-medium text-brand-dark shadow-2xs">
+                        <Lock className="w-4 h-4 text-amber-600" />
+                        <span>Wallets</span>
+                      </div>
+                    </div>
+
+                    <p className="font-sans text-[11px] text-brand-text/60 leading-relaxed pt-1">
+                      🔒 All transactions are encrypted with 256-bit SSL encryption. Cash on Delivery is disabled to guarantee express contact-free delivery and instant order confirmation.
+                    </p>
                   </div>
                 </div>
               </form>
@@ -828,7 +814,7 @@ export default function CheckoutPage() {
                 ) : (
                   <>
                     <Lock className="w-4 h-4" />
-                    <span>Place Order (₹{finalTotal})</span>
+                    <span>Pay Securely ₹{finalTotal}</span>
                   </>
                 )}
               </button>

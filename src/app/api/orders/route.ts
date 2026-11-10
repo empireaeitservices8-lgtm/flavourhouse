@@ -35,7 +35,7 @@ function generateOrderNumber(): string {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { customer, deliveryAddress, items, paymentMethod = "COD", paymentStatus = "Pending", saveAddress } = body;
+    const { customer, deliveryAddress, items, paymentMethod = "Online", paymentStatus = "Pending", saveAddress } = body;
 
     // 1. Validation
     if (!customer || !customer.fullName || !customer.email || !customer.phone) {
@@ -233,7 +233,7 @@ export async function POST(request: Request) {
       });
 
       const initialStatus = "Pending";
-      const actualPaymentMethod = paymentMethod === "Online" || paymentMethod === "online" ? "Online" : "COD";
+      const actualPaymentMethod = paymentMethod === "COD" || paymentMethod === "cod" ? "COD" : "Online";
       const actualPaymentStatus = paymentStatus === "Paid" ? "Paid" : "Pending";
 
       const [orderRes] = await conn.query(
