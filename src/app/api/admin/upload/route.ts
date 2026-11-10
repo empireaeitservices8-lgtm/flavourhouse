@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import fs from "fs";
-import path from "path";
-
 import { getBearerToken, verifyToken } from "@/lib/auth";
+import { query } from "@/lib/db";
+import sharp from "sharp";
 
 export const dynamic = "force-dynamic";
 
@@ -12,12 +11,22 @@ const TOKEN_VALUE = "flavorhouse_auth_session_token_valid";
 async function isAuthorized(request: Request): Promise<boolean> {
   const token = getBearerToken(request);
   if (token) {
+    if (token === TOKEN_VALUE) return true;
     const decoded = verifyToken(token);
-    if (decoded && decoded.role === "admin") return true;
+    if (decoded && (decoded.role === "admin" || decoded.adminId)) return true;
   }
-  const cookieStore = await cookies();
-  const cToken = cookieStore.get("fh_admin_token");
-  return Boolean(cToken && cToken.value === TOKEN_VALUE);
+
+  try {
+    const cookieStore = await cookies();
+    const cToken = cookieStore.get("fh_admin_token");
+    if (cToken) {
+      if (cToken.value === TOKEN_VALUE) return true;
+      const decoded = verifyToken(cToken.value);
+      if (decoded && (decoded.role === "admin" || decoded.adminId)) return true;
+    }
+  } catch {}
+
+  return false;
 }
 
 export async function POST(request: Request) {
@@ -33,40 +42,64 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    // Check file type
-    const validMimes = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml"];
-    if (!validMimes.includes(file.type)) {
+    const validMimes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+      "image/svg+xml",
+      "image/avif",
+    ];
+
+    if (!validMimes.includes(file.type.toLowerCase())) {
       return NextResponse.json(
         { error: "Invalid file type. Please upload a JPEG, PNG, WEBP, or SVG image." },
         { status: 400 }
       );
     }
 
-    const uploadsDir = path.join(process.cwd(), "public", "uploads");
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
+    const originalName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
+    const arrayBuffer = await file.arrayBuffer();
+    let fileBuffer: Buffer = Buffer.from(arrayBuffer);
+    let mimeType = file.type;
+
+    // Optimize raster images using sharp
+    if (file.type !== "image/svg+xml") {
+      try {
+        const optimized = await sharp(fileBuffer)
+          .resize(1600, 1600, { fit: "inside", withoutEnlargement: true })
+          .toBuffer();
+        fileBuffer = Buffer.from(optimized);
+      } catch (sharpError) {
+        console.warn("Sharp optimization skipped, using original buffer:", sharpError);
+      }
     }
 
-    // Clean filename and create unique timestamp
-    const originalName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
-    const uniqueFileName = `${Date.now()}_${originalName}`;
-    const filePath = path.join(uploadsDir, uniqueFileName);
+    const result = await query<any>(
+      `INSERT INTO uploaded_media (filename, mimeType, data, size, createdAt)
+       VALUES (?, ?, ?, ?, NOW())`,
+      [originalName, mimeType, fileBuffer, fileBuffer.length]
+    );
 
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    const insertId = result?.insertId;
+    if (!insertId) {
+      throw new Error("Failed to save media to database");
+    }
 
-    fs.writeFileSync(filePath, buffer);
+    const publicUrl = `/api/media/${insertId}/${originalName}`;
 
     return NextResponse.json({
       success: true,
-      url: `/uploads/${uniqueFileName}`,
+      url: publicUrl,
+      id: insertId,
+      filename: originalName,
     });
   } catch (error: any) {
-    console.error("Upload error:", error);
+    console.error("Admin upload error:", error);
     return NextResponse.json(
       { error: error?.message || "Failed to upload image" },
       { status: 500 }
     );
   }
 }
-
