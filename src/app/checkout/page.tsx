@@ -728,9 +728,6 @@ export default function CheckoutPage() {
                       </div>
                     </div>
 
-                    <p className="font-sans text-[11px] text-brand-text/60 leading-relaxed pt-1">
-                      🔒 All transactions are encrypted with 256-bit SSL encryption. Cash on Delivery is disabled to guarantee express contact-free delivery and instant order confirmation.
-                    </p>
                   </div>
                 </div>
               </form>
