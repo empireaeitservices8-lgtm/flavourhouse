@@ -9,6 +9,7 @@ interface Product {
   name: string;
   category: string;
   price: number;
+  discountPrice?: number | null;
   image: string;
 }
 
@@ -19,8 +20,24 @@ export function ProductDetailsClient({ product }: { product: Product }) {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  const hasDiscount =
+    product.discountPrice !== null &&
+    product.discountPrice !== undefined &&
+    Number(product.discountPrice) > 0 &&
+    Number(product.discountPrice) < Number(product.price);
+
+  const effectivePrice = hasDiscount ? Number(product.discountPrice) : Number(product.price);
+
   const handleAddToCart = () => {
-    addToCart({ id: product.id, name: product.name, price: product.price, image: product.image }, quantity);
+    addToCart(
+      {
+        id: product.id,
+        name: product.name,
+        price: effectivePrice,
+        image: product.image,
+      },
+      quantity
+    );
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 2500);
   };
@@ -39,13 +56,23 @@ export function ProductDetailsClient({ product }: { product: Product }) {
       <h1 className="font-heading text-4xl md:text-5xl font-bold text-brand-dark mb-4 leading-tight">
         {product.name}
       </h1>
-      <div className="flex items-baseline gap-3 mb-6">
+      <div className="flex items-baseline flex-wrap gap-3 mb-6">
         <p className="font-heading text-4xl font-bold text-brand-dark">
-          ₹{product.price * quantity}
+          ₹{effectivePrice * quantity}
         </p>
+        {hasDiscount && (
+          <p className="font-sans text-xl text-brand-text/50 line-through">
+            ₹{product.price * quantity}
+          </p>
+        )}
+        {hasDiscount && (
+          <span className="bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full">
+            {Math.round(((product.price - (product.discountPrice as number)) / product.price) * 100)}% OFF
+          </span>
+        )}
         {quantity > 1 && (
           <span className="text-brand-text/60 font-sans text-sm">
-            (₹{product.price} each)
+            (₹{effectivePrice} each)
           </span>
         )}
       </div>
@@ -147,7 +174,7 @@ export function ProductDetailsClient({ product }: { product: Product }) {
         <p className="flex items-center gap-3">
           <span className="text-xl">🚚</span>
           <span>
-            <strong>Delivery:</strong> ₹70 (upto ₹500) • ₹100 (₹501–₹1,000) • <span className="text-emerald-700 font-bold">FREE above ₹1,000</span>
+            <strong>Delivery:</strong> ₹50 (orders up to ₹500) • <span className="text-emerald-700 font-bold">FREE for orders above ₹500</span>
           </span>
         </p>
         <p className="flex items-center gap-3">

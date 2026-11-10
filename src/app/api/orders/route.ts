@@ -129,7 +129,9 @@ export async function POST(request: Request) {
         }
 
         const unitPrice =
-          product.discountPrice !== null && Number(product.discountPrice) > 0
+          product.discountPrice !== null &&
+          Number(product.discountPrice) > 0 &&
+          Number(product.discountPrice) < Number(product.price)
             ? Number(product.discountPrice)
             : Number(product.price);
         const totalPrice = unitPrice * qty;

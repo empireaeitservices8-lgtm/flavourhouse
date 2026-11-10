@@ -38,10 +38,17 @@ export function FeaturedProductsSection() {
   const handleQuickAdd = (product: any, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    const hasDiscount =
+      product.discountPrice !== null &&
+      product.discountPrice !== undefined &&
+      Number(product.discountPrice) > 0 &&
+      Number(product.discountPrice) < Number(product.price);
+    const effectivePrice = hasDiscount ? Number(product.discountPrice) : Number(product.price);
+
     addToCart({
       id: product.id,
       name: product.name,
-      price: product.price,
+      price: effectivePrice,
       image: product.image,
     });
     setAddedId(product.id);
@@ -74,61 +81,80 @@ export function FeaturedProductsSection() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {products.map((product, idx) => (
-            <motion.div
-              key={product.id || idx}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.08 }}
-              className="group"
-            >
-              <Link
-                href={`/products/${product.id}`}
-                className="block relative aspect-[4/5] bg-brand-sand rounded-3xl overflow-hidden mb-5 border border-brand-border/60 shadow-xs"
+          {products.map((product, idx) => {
+            const hasDiscount =
+              product.discountPrice !== null &&
+              product.discountPrice !== undefined &&
+              Number(product.discountPrice) > 0 &&
+              Number(product.discountPrice) < Number(product.price);
+            const effectivePrice = hasDiscount ? Number(product.discountPrice) : Number(product.price);
+
+            return (
+              <motion.div
+                key={product.id || idx}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.08 }}
+                className="group"
               >
-                <img
-                  src={product.image || "/images/pasta.png"}
-                  alt={product.name}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-brand-dark/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
-                  <button
-                    onClick={(e) => handleQuickAdd(product, e)}
-                    className={`font-button uppercase tracking-wider text-xs px-6 py-3 rounded-full flex items-center gap-2 transition-all transform translate-y-4 group-hover:translate-y-0 shadow-xl cursor-pointer ${
-                      addedId === product.id
-                        ? "bg-emerald-600 text-white"
-                        : "bg-white text-brand-dark hover:bg-brand-primary hover:text-white"
-                    }`}
-                  >
-                    {addedId === product.id ? (
-                      <><Check className="w-4 h-4" /> Added!</>
-                    ) : (
-                      <><ShoppingBag className="w-4 h-4" /> Quick Add</>
-                    )}
-                  </button>
-                </div>
-              </Link>
-              <div className="px-2">
-                <p className="text-brand-text/60 font-sans text-xs uppercase tracking-widest mb-1">
-                  {product.category}
-                </p>
-                <Link href={`/products/${product.id}`}>
-                  <h3 className="font-heading font-bold text-brand-dark text-lg leading-snug mb-2 group-hover:text-brand-primary transition-colors line-clamp-1">
-                    {product.name}
-                  </h3>
-                </Link>
-                <div className="flex items-center gap-2">
-                  <p className="font-button font-bold text-brand-dark">₹{product.price}</p>
-                  {product.discountPrice && (
-                    <p className="font-sans text-xs text-brand-text/50 line-through">
-                      ₹{product.discountPrice}
-                    </p>
+                <Link
+                  href={`/products/${product.id}`}
+                  className="block relative aspect-[4/5] bg-brand-sand rounded-3xl overflow-hidden mb-5 border border-brand-border/60 shadow-xs"
+                >
+                  {hasDiscount && (
+                    <div className="absolute top-3 left-3 z-10 bg-emerald-600 text-white text-[10px] font-bold font-button uppercase tracking-wider px-2.5 py-1 rounded-full shadow-sm">
+                      {Math.round(((Number(product.price) - Number(product.discountPrice)) / Number(product.price)) * 100)}% OFF
+                    </div>
                   )}
+                  <img
+                    src={product.image || "/images/pasta.png"}
+                    alt={product.name}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-brand-dark/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
+                    <button
+                      onClick={(e) => handleQuickAdd(product, e)}
+                      className={`font-button uppercase tracking-wider text-xs px-6 py-3 rounded-full flex items-center gap-2 transition-all transform translate-y-4 group-hover:translate-y-0 shadow-xl cursor-pointer ${
+                        addedId === product.id
+                          ? "bg-emerald-600 text-white"
+                          : "bg-white text-brand-dark hover:bg-brand-primary hover:text-white"
+                      }`}
+                    >
+                      {addedId === product.id ? (
+                        <><Check className="w-4 h-4" /> Added!</>
+                      ) : (
+                        <><ShoppingBag className="w-4 h-4" /> Quick Add</>
+                      )}
+                    </button>
+                  </div>
+                </Link>
+                <div className="px-2">
+                  <p className="text-brand-text/60 font-sans text-xs uppercase tracking-widest mb-1">
+                    {product.category}
+                  </p>
+                  <Link href={`/products/${product.id}`}>
+                    <h3 className="font-heading font-bold text-brand-dark text-lg leading-snug mb-2 group-hover:text-brand-primary transition-colors line-clamp-1">
+                      {product.name}
+                    </h3>
+                  </Link>
+                  <div className="flex items-center gap-2">
+                    <p className="font-button font-bold text-brand-dark">₹{effectivePrice}</p>
+                    {hasDiscount && (
+                      <p className="font-sans text-xs text-brand-text/50 line-through">
+                        ₹{product.price}
+                      </p>
+                    )}
+                    {hasDiscount && (
+                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">
+                        Save ₹{Number(product.price) - Number(product.discountPrice)}
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>

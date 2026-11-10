@@ -284,11 +284,15 @@ export default function AdminProductsPage() {
                     {/* Price */}
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-1.5 font-sans">
-                        <span className="font-bold text-[#3F3424]">₹{p.price}</span>
-                        {p.discountPrice && (
-                          <span className="text-[11px] text-[#A17D49] line-through">
-                            ₹{p.discountPrice}
-                          </span>
+                        {p.discountPrice && Number(p.discountPrice) > 0 && Number(p.discountPrice) < Number(p.price) ? (
+                          <>
+                            <span className="font-bold text-[#3F3424]">₹{p.discountPrice}</span>
+                            <span className="text-[11px] text-[#A17D49] line-through">
+                              ₹{p.price}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="font-bold text-[#3F3424]">₹{p.price}</span>
                         )}
                       </div>
                     </td>

@@ -55,7 +55,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 );
                 if (match) {
                   const currentPrice = Number(
-                    match.discountPrice && match.discountPrice > 0 ? match.discountPrice : match.price
+                    match.discountPrice && Number(match.discountPrice) > 0 && Number(match.discountPrice) < Number(match.price)
+                      ? match.discountPrice
+                      : match.price
                   );
                   if (cartItem.price !== currentPrice || (match.image && cartItem.image !== match.image)) {
                     updated = true;

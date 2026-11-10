@@ -152,9 +152,18 @@ export default async function SingleProductPage({ params }: { params: Promise<{ 
                     <h3 className="font-heading font-bold text-brand-dark text-lg mb-1 group-hover:text-brand-primary transition-colors">
                       {related.name}
                     </h3>
-                    <p className="font-button font-bold text-brand-dark">
-                      ₹{related.price}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-button font-bold text-brand-dark">
+                        ₹{related.discountPrice && Number(related.discountPrice) > 0 && Number(related.discountPrice) < Number(related.price)
+                          ? related.discountPrice
+                          : related.price}
+                      </p>
+                      {related.discountPrice && Number(related.discountPrice) > 0 && Number(related.discountPrice) < Number(related.price) && (
+                        <p className="font-sans text-xs text-brand-text/50 line-through">
+                          ₹{related.price}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </Link>
               ))}

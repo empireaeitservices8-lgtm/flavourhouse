@@ -70,10 +70,17 @@ export function ComboOffers({ acf }: { acf?: any }) {
 
   const handleAddToCart = (product: any, e: React.MouseEvent) => {
     e.preventDefault();
+    const hasDiscount =
+      product.discountPrice !== null &&
+      product.discountPrice !== undefined &&
+      Number(product.discountPrice) > 0 &&
+      Number(product.discountPrice) < Number(product.price);
+    const effectivePrice = hasDiscount ? Number(product.discountPrice) : Number(product.price);
+
     addToCart({
       id: product.id,
       name: product.name,
-      price: product.price,
+      price: effectivePrice,
       image: product.image,
     });
     setAddedId(product.id);
@@ -157,9 +164,13 @@ export function ComboOffers({ acf }: { acf?: any }) {
                 <div>
                   <span className="text-xs text-brand-sand/60 block font-sans">Special Price</span>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold text-white font-button">₹{product.price}</span>
-                    {product.discountPrice && (
-                      <span className="text-sm text-brand-sand/50 line-through">₹{product.discountPrice}</span>
+                    {product.discountPrice && Number(product.discountPrice) > 0 && Number(product.discountPrice) < Number(product.price) ? (
+                      <>
+                        <span className="text-2xl font-bold text-white font-button">₹{product.discountPrice}</span>
+                        <span className="text-sm text-brand-sand/50 line-through">₹{product.price}</span>
+                      </>
+                    ) : (
+                      <span className="text-2xl font-bold text-white font-button">₹{product.price}</span>
                     )}
                   </div>
                 </div>
